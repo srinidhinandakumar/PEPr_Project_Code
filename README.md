@@ -33,7 +33,7 @@ If you encounter this error:
 ******Check your JSON File:  data/alltweets.json ******
 ```
 - Check the alltweets.json file. 
-- Scroll to the very end to make sure that the JSOn file is correct. 
+- Scroll to the very end to make sure that the JSON file is correct. 
 - If the file has an incomplete JSON (encounterd if the process was killed mid-way) remove the last json object from the list, close the list, save the file and run again. 
 - You can cross check to see that the lastId.txt file must now hold the id of the last JSON object in the alltweets.json file.
 
