@@ -1,6 +1,8 @@
 # PEPr_Project_Code
 Code repository for Presidential Election Predictions. 
 
+### Steps to run the project
+
 Step 1: Create conda environment or any virtual environment of your choice:
 
 `conda create -n twitter-scraper python=3.6`
@@ -11,7 +13,7 @@ Step 2: Activate conda environment
 
 Step 3: Download all requirements
 
-`conda install --yes --file requirements.txt `
+`conda install --yes --file requirements.txt`
 
 Step 4: Install tweepy separately
 
@@ -22,9 +24,9 @@ Step 5: Run twitter_scraper.py
 `python twitter_scraper.py`
 
 
-**FAQs:**
+### Notes
 
-*Types of errors encountered:-*
+**Types of errors encountered:-**
 
 If you encounter this error: 
 
@@ -37,3 +39,14 @@ If you encounter this error:
 - If the file has an incomplete JSON (encounterd if the process was killed mid-way) remove the last json object from the list, close the list, save the file and run again. 
 - You can cross check to see that the lastId.txt file must now hold the id of the last JSON object in the alltweets.json file.
 
+**Good News**
+
+You can stop the process when ever needed. To continue, just run the program again. It will resume from the last end point.
+
+To deactivate your venv:
+
+`source deactivate`
+
+To remove your venv:
+
+`conda env remove -n twitter-scraper`
