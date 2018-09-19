@@ -3,6 +3,8 @@ Code repository for Presidential Election Predictions.
 
 ### Steps to run the project
 
+Step 0: Create twitter applications on https://developer.twitter.com/content/developer-twitter/en.html and Fill in the tokens and secrets from the app - in the twitter_scraper.py file
+
 Step 1: Create conda environment or any virtual environment of your choice:
 
 `conda create -n twitter-scraper python=3.6`
