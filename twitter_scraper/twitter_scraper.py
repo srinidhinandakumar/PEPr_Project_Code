@@ -2,6 +2,7 @@ import json
 import time
 from typing import List
 
+import tqdm as tqdm
 from tweepy import OAuthHandler, API
 
 consumer_key = ""
@@ -84,33 +85,33 @@ class TwitterScraper:
         errorTweets = []
         cur_cycle_requests = 0
         crawled_tweets = 0
-        for i in range(start, tweetids_count):
-            try:
-                tweet = self.api.get_status(tweetids[i], tweet_mode="extended")
-                lastId = tweetids[i]
-                cur_cycle_tweets.append(json.dumps(tweet._json))
-                crawled_tweets += 1
-            except Exception as e:
-                print("------ERROR: ", str(e), " ID: ", tweetids[i], "------")
-                errorTweets.append(tweetids[i])
-                if type(e).__name__ == "RateLimitError":
-                    print("------SLEEP for 200s------")
-                    time.sleep(200)
-
-            cur_cycle_requests += 1
+        for cycle in range(start, tweetids_count, self.request_rate_limits):
+            # second loop to just show progress of crawling...
+            for i in tqdm.tqdm(range(cycle, cycle+self.request_rate_limits)):
+                try:
+                    tweet = self.api.get_status(tweetids[i], tweet_mode="extended")
+                    lastId = tweetids[i]
+                    cur_cycle_tweets.append(json.dumps(tweet._json))
+                    crawled_tweets += 1
+                except Exception as e:
+                    print("------ERROR: ", str(e), " ID: ", tweetids[i], "------")
+                    errorTweets.append(tweetids[i])
+                    if type(e).__name__ == "RateLimitError":
+                        print("------SLEEP for 200s------")
+                        time.sleep(300)
 
             # at the end of cycle flushing everything to disk
-            if cur_cycle_requests % self.request_rate_limits == 0:
-                self.append_tweets_data(cur_cycle_tweets)
-                self.write_error_tweets(errorTweets)
-                self.write_last_id(lastId)
-                cur_cycle_tweets = []
-                errorTweets = []
-                print("Cycle complete, crawled {} tweets".format(crawled_tweets))
+            self.append_tweets_data(cur_cycle_tweets)
+            self.write_error_tweets(errorTweets)
+            self.write_last_id(lastId)
+            cur_cycle_tweets = []
+            errorTweets = []
+            print("Cycle complete, crawled {} tweets".format(crawled_tweets))
 
 
 if __name__ == '__main__':
     try:
         TwitterScraper().scrap()
     except KeyboardInterrupt:
-        exit()
+        exit(0)
+
