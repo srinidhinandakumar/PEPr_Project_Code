@@ -16,7 +16,7 @@ class TwitterScraper:
         self.outputfilename = "data/alltweets.json"
         self.lastidfilename = "data/lastId.txt"
         self.errorfilename = "data/errortweets.txt"
-        self.request_rate_limits = 5
+        self.request_rate_limits = 800
         self.api = self.authenitcate()
 
     def authenitcate(self):
@@ -71,11 +71,14 @@ class TwitterScraper:
     def scrap(self):
         tweetids = self.read_tweetIds()
         tweetids_count = len(tweetids)
+
         print("tweet ids to crawl: ", len(tweetids))
         self.print_crawled_status()
+
         lastId = self.get_last_crawled_id()
         start = tweetids.index(lastId) + 1 if lastId else 0
         print("crawling from ", start)
+
         # accumulators
         cur_cycle_tweets = []
         errorTweets = []
