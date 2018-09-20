@@ -91,6 +91,7 @@ class TwitterScraper:
                 try:
                     tweet = self.api.get_status(tweetids[i], tweet_mode="extended")
                     lastId = tweetids[i]
+                    print(lastId)
                     cur_cycle_tweets.append(json.dumps(tweet._json))
                     crawled_tweets += 1
                 except Exception as e:
