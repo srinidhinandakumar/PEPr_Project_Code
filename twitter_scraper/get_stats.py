@@ -1,8 +1,5 @@
 import json
-import time
-
 import re
-# import tqdm as tqdm
 
 class GetStats:
     def __init__(self):
@@ -22,7 +19,6 @@ class GetStats:
         outputfilename = self.outputfolder + self.dicts[i] + ".json"
         with open(outputfilename, 'w') as fp:
             json.dump(eval(dict), fp)
-        # fp.close()
         print(outputfilename + " is ready.")
 
     def clean_tweet_source(self, source):
