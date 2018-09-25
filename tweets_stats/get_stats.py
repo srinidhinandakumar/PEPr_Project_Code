@@ -1,11 +1,12 @@
 import json
+import matplotlib.pyplot as plt
 import re
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 class GetStats:
     def __init__(self):
-        self.inputfilename = "data/alltweets.json"
+        self.inputfilename = "../twitter_scrapper/data/alltweets.json"
         self.outputfolder = "stats/"
 
         # Single Param dicts
@@ -41,6 +42,20 @@ class GetStats:
         with open(outputfilename, 'w') as fp:
             json.dump(sorted_d, fp)
         print(outputfilename + " is ready.")
+
+    def plot_dict(self, dict_str, i):
+        d = eval(dict_str)
+        sorted_d = dict(sorted(d.items(), key=lambda x: -x[1]))
+        keys, counts = [], []
+        i = 0
+        for key, val in sorted_d.items():
+            if i > 10:
+                break
+            keys.append(key)
+            counts.append(val)
+            i += 1
+        plt.plot(keys, counts)
+        plt.show()
 
     def clean_tweet_source(self, source):
         try:
@@ -95,7 +110,7 @@ class GetStats:
                     tweet = json.loads(line)
 
                     sourceExists = True if "source" in tweet else False
-                    hashtagExists = True if "entitites" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
+                    hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
                     dateExists = True if "created_at" in tweet else False
                     locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
                     placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
@@ -132,10 +147,14 @@ class GetStats:
             for i, dict in enumerate(self.dicts):
                 self.dump_dict(dict, i)
 
+            for i, dict in enumerate(self.dicts):
+                self.plot_dict(dict, i)
+
         except FileNotFoundError:
             print("unable to find tweet file")
         except Exception as e:
             print(e)
+
 
 if __name__ == '__main__':
     try:
