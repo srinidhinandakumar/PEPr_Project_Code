@@ -52,8 +52,9 @@ class TwitterScraper:
             return None
 
     def append_tweets_data(self, json_tweets_list: List[str]):
+        non_empty_tweets = [tw for tw in json_tweets_list if tw]
         with open(self.outputfilename, 'a') as fp:
-            fp.write("\n".join(json_tweets_list) + "\n")
+            fp.write("\n".join(non_empty_tweets) + "\n")
 
     def write_last_id(self, lastId):
         with open(self.lastidfilename, 'w') as fp:
