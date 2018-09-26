@@ -24,10 +24,12 @@ def word_distribution(data: List[str]):
     counter.fit(data)
     word_counts = list(counter.vocabulary_.items())
     word_counts.sort(key = lambda x:x[1], reverse=True)
-    words =  [word for word, _ in word_counts][:10]
+    words = [word for word, _ in word_counts][:10]
     frequency = [freq for _, freq in word_counts][:10]
     plt.plot(words, frequency)
     plt.show()
 
 
-word_distribution(read_input_folder())
+
+if __name__ == '__main__':
+    word_distribution(read_input_folder())
