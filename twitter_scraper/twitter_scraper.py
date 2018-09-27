@@ -5,11 +5,14 @@ from typing import List
 import tqdm as tqdm
 from tweepy import OAuthHandler, API
 
-consumer_key = ""
-consumer_secret = ""
-access_token = ""
-access_token_secret = ""
+with open("config.json", 'r') as fp:
+    config = json.load(fp)
 
+twitter_config = config["twitter-keys"]
+consumer_key = twitter_config["consumer_key"]
+consumer_secret = twitter_config["consumer_secret"]
+access_token = twitter_config["access_token"]
+access_token_secret = twitter_config["access_token_secret"]
 
 class TwitterScraper:
     def __init__(self):
