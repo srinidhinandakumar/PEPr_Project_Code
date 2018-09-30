@@ -6,7 +6,8 @@ from datetime import datetime
 
 class GetStats:
     def __init__(self):
-        self.inputfilename = "../twitter_scrapper/data/alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/alltweets.json"
+        self.inputfilename = "../twitter_scraper/data/kdata.json"
         self.outputfolder = "stats/"
 
         # Single Param dicts
@@ -45,6 +46,7 @@ class GetStats:
 
     def plot_dict(self, dict_str, i):
         d = eval(dict_str)
+        chartname = 'charts/' + dict_str + '.png'
         sorted_d = dict(sorted(d.items(), key=lambda x: -x[1]))
         keys, counts = [], []
         i = 0
@@ -55,7 +57,9 @@ class GetStats:
             counts.append(val)
             i += 1
         plt.plot(keys, counts)
+        plt.savefig(chartname)
         plt.show()
+        plt.close()
 
     def clean_tweet_source(self, source):
         try:
