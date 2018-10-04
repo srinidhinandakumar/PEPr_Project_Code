@@ -1,10 +1,17 @@
 import json
 import matplotlib.pyplot as plt
+import nltk
 import re
 
+from collections import Counter
 from datetime import datetime
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from wordcloud import WordCloud
 
 class GetStats:
+    stop_words = set(stopwords.words('english'))
+
     def __init__(self):
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
         self.inputfilename = "../twitter_scraper/data/kdata.json"
@@ -15,12 +22,13 @@ class GetStats:
         self.hashtag_count = {}
         self.date_count = {}
         self.location_count = {}
+        self.user_bio_count = {}
 
         # Double Param dicts
         self.date_location_count = {}
 
         # List of dicts
-        self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.date_location_count"]
+        self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
 
     def add_key_to_dict(self, dict, keys):
         for key in keys:
@@ -46,20 +54,25 @@ class GetStats:
 
     def plot_dict(self, dict_str, i):
         d = eval(dict_str)
-        chartname = 'charts/' + dict_str + '.png'
+        chartname = 'charts/wc_' + dict_str + '.png'
         sorted_d = dict(sorted(d.items(), key=lambda x: -x[1]))
-        keys, counts = [], []
-        i = 0
-        for key, val in sorted_d.items():
-            if i > 10:
-                break
-            keys.append(key)
-            counts.append(val)
-            i += 1
+        keys = [key for key, _ in sorted_d.items()][:10]
+        counts = [count for _, count in sorted_d.items()][:10]
         plt.plot(keys, counts)
         plt.savefig(chartname)
         plt.show()
         plt.close()
+
+    def plot_dict_wc(self, dict_str, i):
+        d = eval(dict_str)
+        chartname = 'charts/wc_' + dict_str + '.png'
+        all_orgs = [(key, val) for key, val in d.items()]
+        all_orgs_words = {text: freq for (text, freq) in all_orgs}
+        wc = WordCloud(width=1000, height=800).generate_from_frequencies(all_orgs_words)
+        plt.imshow(wc)
+        plt.axis("off")
+        plt.show()
+        plt.imsave(chartname, wc)
 
     def clean_tweet_source(self, source):
         try:
@@ -105,6 +118,24 @@ class GetStats:
         if location != "":
             return [location.lower()]
         return []
+    def clean_location_state(self, location):
+        if location != "":
+            geo = location.strip().lower().split(",")
+            # print(geo)
+            if len(geo) < 2:
+                geo = geo[0]
+            elif len(geo) >= 2:
+                geo = geo[-1].strip()
+            return [geo]
+        return []
+
+    def clean_userbio(self, userbio):
+        userbio = re.sub(r'[^a-zA-z\s]', '', userbio).lower()
+        word_tokens = word_tokenize(userbio)
+        word_tokens = [w for w in word_tokens if not w in self.stop_words]
+        # more preprocessing here
+        # print(words)
+        return word_tokens
 
     def main(self):
         try:
@@ -116,7 +147,8 @@ class GetStats:
                     sourceExists = True if "source" in tweet else False
                     hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
                     dateExists = True if "created_at" in tweet else False
-                    locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
+                    # locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
+                    userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
                     placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
                     # tweet source
@@ -136,15 +168,20 @@ class GetStats:
                         self.add_key_to_dict(self.date_count, dates)
 
                     # location (of user) and place (from where the tweet is being published)
-                    if locationExists:
-                        locations = self.clean_location(tweet["user"]["location"])
-                        self.add_key_to_dict(self.location_count, locations)
+                    # if locationExists:
+                    #     locations = self.clean_location(tweet["user"]["location"])
+                    #     self.add_key_to_dict(self.location_count, locations)
                     if placeExists:
-                        locations = self.clean_location(tweet["place"]["full_name"])
+                        locations = self.clean_location_state(tweet["place"]["full_name"])
                         self.add_key_to_dict(self.location_count, locations)
 
+                    # userbio
+                    if userbioExists:
+                        userbio = self.clean_userbio(tweet["user"]["description"])
+                        self.add_key_to_dict(self.user_bio_count, userbio)
+
                     # date and location
-                    if dateExists and locationExists:
+                    if dateExists and placeExists:
                         self.add_key_to_2args_dict(self.date_location_count, dates, locations)
 
 
@@ -152,7 +189,7 @@ class GetStats:
                 self.dump_dict(dict, i)
 
             for i, dict in enumerate(self.dicts):
-                self.plot_dict(dict, i)
+                self.plot_dict_wc(dict, i)
 
         except FileNotFoundError:
             print("unable to find tweet file")
