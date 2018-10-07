@@ -28,6 +28,24 @@ Step 5: Run twitter_scraper.py
 
 ### Notes
 
+#### Configuring the module
+
+1. config.json file under twitter-scraper module contains the required configurations
+
+create a config.json file inside twitter-scraper directory, and currently the file takes the following structure 
+
+```
+{
+  "twitter-keys": {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": ",
+    "access_token_secret": ""
+  }
+}
+
+```
+
 **Types of errors encountered:-**
 
 1. If you encounter this error: 
