@@ -164,7 +164,7 @@ class GetStats:
                     # date
                     if dateExists:
                         # Pass a list of parameters that you want to consider for the date in second arg
-                        dates = self.clean_date(tweet["created_at"], ["hour"])
+                        dates = self.clean_date(tweet["created_at"], ["day"])
                         self.add_key_to_dict(self.date_count, dates)
 
                     # location (of user) and place (from where the tweet is being published)
