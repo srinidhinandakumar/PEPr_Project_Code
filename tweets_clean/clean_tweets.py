@@ -6,7 +6,7 @@ import string
 class CleanTweet:
     def __init__(self):
         self.inputfilename = "../twitter_scraper/data/alltweets.json"
-        self.outputfolder = "cleaned_data/alltweets.json"
+        self.outputfilename = "cleaned_data/alltweets.json"
 
         self.cList = {
           "ain't": "am not",
@@ -199,16 +199,27 @@ class CleanTweet:
     def main(self):
         try:
             result = ""
+            count=0
+            allc = 0
             with open(self.inputfilename, "r") as fr:
                 lines = fr.readlines()
                 for line in lines:
                     tweet = json.loads(line)
+                    print(tweet["id"])
                     cleaned_tweet = self.cleaning_pipeline(tweet["full_text"])
                     tweet["full_text"] = cleaned_tweet
                     result+=str(tweet)+"\n"
+                    count+=1
+                    if count==800:
+                        allc+=count
+                        print("*****Cleaned ",allc," tweets*****")
+                        with open(self.outputfilename, "a") as fq:
+                            fq.write(result)
+                        result=""
+                        count=0
             # write into output folder and file
             print(result)
-            with open(self.outputfilename, "w") as fq:
+            with open(self.outputfilename, "a") as fq:
                 fq.write(result)
                 # may be we'll use this file for predicting polarity and topic modelling
 
