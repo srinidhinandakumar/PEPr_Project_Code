@@ -201,10 +201,19 @@ class CleanTweet:
             result = ""
             count=0
             allc = 0
+            start=False
+            tweet_id_prev=756633551152394240
             with open(self.inputfilename, "r") as fr:
                 lines = fr.readlines()
                 for line in lines:
+                  try:
                     tweet = json.loads(line)
+                    # on rerunning from a previous tweet - update tweet_id_prev
+                    # if tweet["id"]!=tweet_id_prev and not start:
+                    #   continue
+                    # else:
+                    #   start = True
+
                     print(tweet["id"])
                     cleaned_tweet = self.cleaning_pipeline(tweet["full_text"])
                     tweet["full_text"] = cleaned_tweet
@@ -217,6 +226,8 @@ class CleanTweet:
                             fq.write(result)
                         result=""
                         count=0
+                  except Exception as e:
+                    print("Error : "+str(e)+" "+print(tweet["id"]))
             # write into output folder and file
             print(result)
             with open(self.outputfilename, "a") as fq:
