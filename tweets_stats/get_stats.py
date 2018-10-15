@@ -14,7 +14,8 @@ class GetStats:
 
     def __init__(self):
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/kdata.json"
+        self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/kdata.json"
         self.outputfolder = "stats/"
 
         # Single Param dicts
@@ -142,48 +143,53 @@ class GetStats:
             with open(self.inputfilename, "r") as fr:
                 lines = fr.readlines()
                 for line in lines:
-                    tweet = json.loads(line)
+                    try:
+                        # line = line.decode('utf-8').replace('\0', '')
+                        tweet = json.loads(line)
 
-                    sourceExists = True if "source" in tweet else False
-                    hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
-                    dateExists = True if "created_at" in tweet else False
-                    # locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
-                    userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
-                    placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
+                        sourceExists = True if "source" in tweet else False
+                        hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
+                        dateExists = True if "created_at" in tweet else False
+                        # locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
+                        userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
+                        placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
-                    # tweet source
-                    if sourceExists:
-                        sources = self.clean_tweet_source(tweet["source"])
-                        self.add_key_to_dict(self.tweet_source_count, sources)
+                        # tweet source
+                        if sourceExists:
+                            sources = self.clean_tweet_source(tweet["source"])
+                            self.add_key_to_dict(self.tweet_source_count, sources)
 
-                    # hashtag
-                    if hashtagExists:
-                        hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
-                        self.add_key_to_dict(self.hashtag_count, hashtags)
+                        # hashtag
+                        if hashtagExists:
+                            hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
+                            self.add_key_to_dict(self.hashtag_count, hashtags)
 
-                    # date
-                    if dateExists:
-                        # Pass a list of parameters that you want to consider for the date in second arg
-                        dates = self.clean_date(tweet["created_at"], ["day"])
-                        self.add_key_to_dict(self.date_count, dates)
+                        # date
+                        if dateExists:
+                            # Pass a list of parameters that you want to consider for the date in second arg
+                            dates = self.clean_date(tweet["created_at"], ["day"])
+                            self.add_key_to_dict(self.date_count, dates)
 
-                    # location (of user) and place (from where the tweet is being published)
-                    # if locationExists:
-                    #     locations = self.clean_location(tweet["user"]["location"])
-                    #     self.add_key_to_dict(self.location_count, locations)
-                    if placeExists:
-                        locations = self.clean_location_state(tweet["place"]["full_name"])
-                        self.add_key_to_dict(self.location_count, locations)
+                        # location (of user) and place (from where the tweet is being published)
+                        # if locationExists:
+                        #     locations = self.clean_location(tweet["user"]["location"])
+                        #     self.add_key_to_dict(self.location_count, locations)
+                        if placeExists:
+                            locations = self.clean_location_state(tweet["place"]["full_name"])
+                            self.add_key_to_dict(self.location_count, locations)
 
-                    # userbio
-                    if userbioExists:
-                        userbio = self.clean_userbio(tweet["user"]["description"])
-                        self.add_key_to_dict(self.user_bio_count, userbio)
+                        # userbio
+                        if userbioExists:
+                            userbio = self.clean_userbio(tweet["user"]["description"])
+                            self.add_key_to_dict(self.user_bio_count, userbio)
 
-                    # date and location
-                    if dateExists and placeExists:
-                        self.add_key_to_2args_dict(self.date_location_count, dates, locations)
+                        # date and location
+                        if dateExists and placeExists:
+                            self.add_key_to_2args_dict(self.date_location_count, dates, locations)
 
+                    except:
+                        # print('bad json: ', line)
+                        pass
 
             for i, dict in enumerate(self.dicts):
                 self.dump_dict(dict, i)
