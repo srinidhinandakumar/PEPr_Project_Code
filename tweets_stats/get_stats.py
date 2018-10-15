@@ -13,8 +13,8 @@ class GetStats:
     stop_words = set(stopwords.words('english'))
 
     def __init__(self):
-        # self.inputfilename = "../twitter_scraper/data/alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/kdata.json"
+        self.inputfilename = "../twitter_scraper/data/alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/kdata.json"
         self.outputfolder = "stats/"
 
         # Single Param dicts
