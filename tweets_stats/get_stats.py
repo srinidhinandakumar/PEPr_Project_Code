@@ -14,7 +14,9 @@ class GetStats:
 
     def __init__(self):
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
+        self.inputfilename = "../twitter_scraper/data/srinidhi_alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/kdata.json"
         self.outputfolder = "stats/"
 
@@ -167,7 +169,7 @@ class GetStats:
                         # date
                         if dateExists:
                             # Pass a list of parameters that you want to consider for the date in second arg
-                            dates = self.clean_date(tweet["created_at"], ["day"])
+                            dates = self.clean_date(tweet["created_at"], ["day", "month"])
                             self.add_key_to_dict(self.date_count, dates)
 
                         # location (of user) and place (from where the tweet is being published)
