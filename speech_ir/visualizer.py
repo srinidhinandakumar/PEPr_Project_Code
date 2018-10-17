@@ -15,7 +15,7 @@ def read_input_folder():
     """
     data = []
     for filename in os.listdir(input_folder):
-        if filename == "Donald Trump_September 24, 2016.txt":
+        if filename == "Donald Trump_September 24, 2016.txt":  # update as necessary
             with open("{}/{}".format(input_folder, filename), 'r') as fp:
                 data.append(fp.read())
             return data
