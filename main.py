@@ -34,7 +34,9 @@ def main(ldamodel):
             for line in lines:
                 try:
                     tweet = json.loads(line)
-                    # on rerunning from a previous tweet - update tweet_id_prev
+                    '''
+                    On rerunning from a previous tweet - update tweet_id_prev and uncomment following code
+                    '''
                     # if tweet["id"]!=tweet_id_prev and not start:
                     #   continue
                     # else:
@@ -66,11 +68,6 @@ def main(ldamodel):
 
                 except Exception as e:
                     print("Error : "+str(e))
-        # write into output folder and file
-        print(result)
-        with open(outputfilename, "a") as fq:
-            fq.write(result)
-            # may be we'll use this file for predicting polarity and topic modelling
 
     except FileNotFoundError:
         print("unable to find tweet file")

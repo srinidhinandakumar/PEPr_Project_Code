@@ -1,28 +1,16 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
 import re
 import json
 from textblob import TextBlob
 import string
 
-# In[14]:
-
-
 # inputfilename = "../twitter_scraper/data/alltweets.json"
 # outputfilename = "tweets_clean/cleaned_data/alltweets.json"
-expansions = "tweets_clean/expansions.json"
-# Sept 30
+expansions = "tweets_clean/expansions.json" # update relative path if running this file alone
+
 
 with open(expansions, "r") as fp:
     cList = json.load(fp)
 c_re = re.compile('(%s)' % '|'.join(cList.keys()))
-
-
-# In[15]:
 
 
 def strip_links(text):
@@ -33,9 +21,6 @@ def strip_links(text):
     return text
 
 
-# In[16]:
-
-
 def expandContractions(text):
     global c_re
 
@@ -44,9 +29,6 @@ def expandContractions(text):
 
     text = c_re.sub(replace, text.lower())
     return text
-
-
-# In[17]:
 
 
 def strip_hashtags(text):
@@ -64,9 +46,6 @@ def strip_hashtags(text):
     return ' '.join(words)
 
 
-# In[18]:
-
-
 def strip_mentions(text):
     entity_prefixes = ['@','#']
     for separator in string.punctuation:
@@ -81,9 +60,6 @@ def strip_mentions(text):
     return ' '.join(words)
 
 
-# In[19]:
-
-
 def remove_special_characters(text, remove_digits=False):
     pattern = r'[^a-zA-z0-9\s]' if not remove_digits else r'[^a-zA-z\s]'
     text = re.sub(pattern, '', text)
@@ -91,16 +67,10 @@ def remove_special_characters(text, remove_digits=False):
     return text
 
 
-# In[20]:
-
-
-def spellcheck(text):
+def spell_check(text):
     b = TextBlob(text)
     correct_spelling = b.correct()
     return correct_spelling
-
-
-# In[21]:
 
 
 def cleaning_pipeline(text):
@@ -108,10 +78,7 @@ def cleaning_pipeline(text):
     text = strip_links(text)
     text = strip_mentions(text)
     text = strip_hashtags(text)
-    text = spellcheck(text)
+    text = spell_check(text)
     #text = remove_special_characters(text)
 
     return str(text)
-
-# print(strip_hashtags("text1 text2 http://url.com/bla1/blah1/ #getup"))
-# print(cleaning_pipeline("Hi @ieuehdbd https://scdjsd.com we're not coool #getup"))
