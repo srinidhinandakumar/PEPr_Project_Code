@@ -1,7 +1,4 @@
 
-# coding: utf-8
-
-# In[1]:
 import re
 import time
 import json
@@ -12,8 +9,6 @@ from datetime import datetime as dt
 from speech_ir.lda_models import lda_model
 from tweets_clean.clean_tweets import cleaning_pipeline
 
-# In[14]:
-
 
 inputfilename = "../twitter-scraper-rohith/data/10ktweets.json"
 outputfilename = "../twitter-scraper-rohith/cleaned_data/10ktweets.json"
@@ -23,7 +18,6 @@ def main(ldamodel):
     try:
         result = ""
         count=0
-        allc = 0
         start=False
         tweet_id_prev=756633551152394240
         fq = open(outputfilename, "a")
