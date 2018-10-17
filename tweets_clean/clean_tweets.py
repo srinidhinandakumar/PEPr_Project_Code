@@ -9,14 +9,13 @@ import json
 from textblob import TextBlob
 import string
 
-
 # In[14]:
 
 
-inputfilename = "../twitter_scraper/data/alltweets.json"
-outputfilename = "cleaned_data/alltweets.json"
-
-with open("expansions.json", "r") as fp:
+# inputfilename = "../twitter_scraper/data/alltweets.json"
+# outputfilename = "tweets_clean/cleaned_data/alltweets.json"
+expansions = "tweets_clean/expansions.json"
+with open(expansions, "r") as fp:
     cList = json.load(fp)
 c_re = re.compile('(%s)' % '|'.join(cList.keys()))
 
@@ -37,6 +36,7 @@ def strip_links(text):
 
 def expandContractions(text):
     global c_re
+
     def replace(match):
         return cList[match.group(0)]
 
@@ -114,7 +114,7 @@ def cleaning_pipeline(text):
 # In[ ]:
 
 
-def main():
+def main(ldamodel):
     try:
         result = ""
         count=0
@@ -162,4 +162,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    ldamodel = lda_model()
+    main(ldamodel)
