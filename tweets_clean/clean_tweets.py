@@ -15,6 +15,8 @@ import string
 # inputfilename = "../twitter_scraper/data/alltweets.json"
 # outputfilename = "tweets_clean/cleaned_data/alltweets.json"
 expansions = "tweets_clean/expansions.json"
+# Sept 30
+
 with open(expansions, "r") as fp:
     cList = json.load(fp)
 c_re = re.compile('(%s)' % '|'.join(cList.keys()))
@@ -24,8 +26,8 @@ c_re = re.compile('(%s)' % '|'.join(cList.keys()))
 
 
 def strip_links(text):
-    link_regex    = re.compile('((https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)', re.DOTALL)
-    links         = re.findall(link_regex, text)
+    link_regex = re.compile('((https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)', re.DOTALL)
+    links = re.findall(link_regex, text)
     for link in links:
         text = text.replace(link[0], ', ')
     return text
@@ -48,15 +50,16 @@ def expandContractions(text):
 
 
 def strip_hashtags(text):
-    entity_prefixes = ['#']
-    for separator in  string.punctuation:
-        if separator not in entity_prefixes :
-            text = text.replace(separator,' ')
+
+    entity_prefixes = ['#','@']
+    for separator in string.punctuation:
+        if separator not in entity_prefixes:
+            text = text.replace(separator, ' ')
     words = []
     for word in text.split():
         word = word.strip()
         if word:
-            if word[0] not in entity_prefixes:
+            if word[0] != "#":
                 words.append(word)
     return ' '.join(words)
 
@@ -65,15 +68,15 @@ def strip_hashtags(text):
 
 
 def strip_mentions(text):
-    entity_prefixes = ['@']
-    for separator in  string.punctuation:
-        if separator not in entity_prefixes :
+    entity_prefixes = ['@','#']
+    for separator in string.punctuation:
+        if separator not in entity_prefixes:
             text = text.replace(separator,' ')
     words = []
     for word in text.split():
         word = word.strip()
         if word:
-            if word[0] not in entity_prefixes:
+            if word[0] != "@":
                 words.append(word)
     return ' '.join(words)
 
@@ -101,12 +104,14 @@ def spellcheck(text):
 
 
 def cleaning_pipeline(text):
-    text = spellcheck(text)
-    #text = remove_special_characters(text)
-    text = strip_mentions(text)
-    text = strip_hashtags(text)
     text = expandContractions(text)
     text = strip_links(text)
+    text = strip_mentions(text)
+    text = strip_hashtags(text)
+    text = spellcheck(text)
+    #text = remove_special_characters(text)
 
-    return text
+    return str(text)
 
+# print(strip_hashtags("text1 text2 http://url.com/bla1/blah1/ #getup"))
+# print(cleaning_pipeline("Hi @ieuehdbd https://scdjsd.com we're not coool #getup"))
