@@ -2,21 +2,21 @@
 # coding: utf-8
 
 # In[1]:
-
-import time
 import re
+import time
 import json
-from textblob import TextBlob
 import string
-
+import datefinder
+from textblob import TextBlob
+from datetime import datetime as dt
 from speech_ir.lda_models import lda_model
 from tweets_clean.clean_tweets import cleaning_pipeline
 
 # In[14]:
 
 
-inputfilename = "../twitter-scraper-rohith/data/1000tweets.json"
-outputfilename = "../twitter-scraper-rohith/cleaned_data/1000tweets.json"
+inputfilename = "../twitter-scraper-rohith/data/10ktweets.json"
+outputfilename = "../twitter-scraper-rohith/cleaned_data/10ktweets.json"
 
 
 def main(ldamodel):
@@ -27,6 +27,8 @@ def main(ldamodel):
         start=False
         tweet_id_prev=756633551152394240
         fq = open(outputfilename, "a")
+        start = list(datefinder.find_dates("Sat Sept 24 00:00:00 +0000 2016"))[0]
+        end = list(datefinder.find_dates("Fri Sept 30 23:59:59 +0000 2016"))[0]
         with open(inputfilename, "r") as fr:
             lines = fr.readlines()
             for line in lines:
@@ -37,11 +39,22 @@ def main(ldamodel):
                     #   continue
                     # else:
                     #   start = True
-
-                    print(tweet["id"])
-                    cleaned_tweet = cleaning_pipeline(tweet["full_text"])
-                    tweet["full_text"] = cleaned_tweet
-                    json.dump(tweet, fq)
+                    '''
+                    Dump only texts 
+                    '''
+                    match = list(datefinder.find_dates(tweet["created_at"]))[0]
+                    if start<=match<=end:
+                        print(tweet["id"])
+                        cleaned_tweet = cleaning_pipeline(tweet["full_text"])
+                        fq.write(cleaned_tweet)
+                        fq.write("\n")
+                    '''
+                    Dump entire tweet json 
+                    '''
+                    # print(tweet["id"])
+                    # cleaned_tweet = cleaning_pipeline(tweet["full_text"])
+                    # tweet["full_text"] = cleaned_tweet
+                    # json.dump(tweet, fq)
                     # count+=1
                     # if count==800:
                     #     allc+=count
@@ -69,6 +82,7 @@ if __name__ == '__main__':
     t = time.time()
     print("----Creating LDA Model-----")
     ls = lda_model()
-    print(str(time.time()-t))
-
+    t1 = time.time()
+    print(str(t1-t))
     main(ls)
+    print(time.time()-t1)
