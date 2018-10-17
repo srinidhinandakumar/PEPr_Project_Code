@@ -1,20 +1,36 @@
-
-import re
-import time
-import json
-import string
 import datefinder
-from textblob import TextBlob
+import json
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
+import string
+import time
+
+from collections import Counter
 from datetime import datetime as dt
+from textblob import TextBlob
+from gensim import corpora, models, similarities
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+
+# User defined library imports
 from speech_ir.lda_models import lda_model
 from tweets_clean.clean_tweets import cleaning_pipeline
-
 
 inputfilename = "../twitter-scraper-rohith/data/10ktweets.json"
 outputfilename = "../twitter-scraper-rohith/cleaned_data/10ktweets.json"
 
+cleaned_tweets_inputfile = "twitter_scraper/cleaned_data/10ktweets_cleaned.txt"
 
-def main(ldamodel):
+
+import nltk
+from nltk.tokenize.toktok import ToktokTokenizer
+tokenizer = ToktokTokenizer()
+
+stopword_list = nltk.corpus.stopwords.words('english')
+
+
+def cleaning(ldamodel):
     try:
         result = ""
         count=0
@@ -69,11 +85,124 @@ def main(ldamodel):
         print(e)
 
 
+def remove_stopwords(text, is_lower_case=False):
+    tokens = tokenizer.tokenize(text)
+    tokens = [token.strip() for token in tokens]
+    if is_lower_case:
+        filtered_tokens = [token for token in tokens if token not in stopword_list]
+    else:
+        filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
+    filtered_text = ' '.join(filtered_tokens)
+    return filtered_text
+
+
+def main(lda_model):
+    features = pd.read_csv(cleaned_tweets_inputfile)
+    # print(features)
+
+    tweet_dictionary = {}
+    id = 0
+    for tweet in features.text:
+        tweet_dictionary[id] = tweet
+        id += 1
+    # print(tweet_dictionary[1])
+
+    # remove stopwords
+    for i in range(0, len(tweet_dictionary)):
+        tweet_dictionary[i] = remove_stopwords(tweet_dictionary[i])
+
+
+    analyser = SentimentIntensityAnalyzer()
+
+    for i in range(0, len(features)):
+        snt = analyser.polarity_scores(tweet_dictionary[i])
+        features.at[i, 'vader_comp'] = snt['compound']
+        features.at[i, 'vader_pos'] = snt['pos']
+        features.at[i, 'vader_neu'] = snt['neu']
+        features.at[i, 'vader_neg'] = snt['neg']
+    # print(features)
+
+    num_tweets = len(features)
+    vad_num_pos = len(features[features['vader_comp'] > .1])
+    vad_num_neg = len(features[features['vader_comp'] < -.1])
+    vad_num_neu = len(features[(features['vader_comp'] < .1) & (features['vader_comp'] > -.1)])
+
+    print("vad_num_pos: %d\nvad_num_neg: %d\nvad_num_neu: %d\ntotal: %d\n" %(vad_num_pos, vad_num_neg, vad_num_neu, num_tweets))
+
+    # make_chart(vad_num_pos, vad_num_neg, vad_num_neu)
+    # get_10_most_neg_tweets(analyser, tweet_dictionary)
+
+
+
+    # Create corupus of all words
+    words_corpus = []
+    for i in range(0, len(tweet_dictionary)):
+        words_corpus.append([word for word in tweet_dictionary[i].lower().split()])# if len(word) > 3])
+
+    dictionary = corpora.Dictionary(words_corpus)
+    dictionary.filter_extremes(no_below=15, no_above=0.5, keep_n=100000)
+    print("dictionary ", dictionary)
+    print("len(dictionary) ", len(dictionary))
+
+    corpus_bow = [dictionary.doc2bow(text) for text in words_corpus]
+    print("len(corpus_bow) ", len(corpus_bow))
+
+
+    # assign the hightest scoring topic to each tweet
+    for i in features.index:
+        # print(i)
+        try:
+            # print(i, sorted(lda_model[corpus_bow[i]], key=lambda tup: -1 * tup[1]))
+            features.at[i, 'topic'] = sorted(lda_model[corpus_bow[i]], key=lambda tup: -1 * tup[1])[0][0]
+        except Exception as e:
+            print(corpus_bow[i])
+            # print(i, features[i])
+            # print(e)
+            break
+
+    print(features.groupby('topic').count())
+
+    # breaks at 446
+
+def get_10_most_neg_tweets(analyser, tweet_dictionary):
+    scores = Counter()
+    for idx, tw in enumerate(tweet_dictionary.values()):
+        snt = analyser.polarity_scores(tw)
+        scores[tw] = (idx, snt['neg'])
+
+    scores = [(key, val) for key, val in scores.items()]
+    scores.sort(key=lambda x: x[1][1], reverse=True)
+
+    print(scores[:10])
+
+def make_chart(positve, negative, neutral, source= "Raw"):
+    # Pie chart
+    labels = ['positive','negative','neutral']
+    sizes = [positve, negative, neutral]
+    colors = ['#99ff99','#ff9999','#66b3ff']
+    explode = (0.05,0.05,0.05)
+    plt.pie(sizes, colors = colors, labels=labels, autopct='%1.1f%%', startangle=80, pctdistance=.9, explode = explode,textprops={'fontsize': 12})
+
+    #draw circle
+    centre_circle = plt.Circle((0,0),0.55,fc='white')
+    fig = plt.gcf()
+    fig.gca().add_artist(centre_circle)
+
+    # Equal aspect ratio ensures that pie is drawn as a circle
+    plt.title('Sentiment Distribution for Topic '+str(source), size = 20)
+    plt.axis('equal')
+    plt.show()
+
+
 if __name__ == '__main__':
     t = time.time()
     print("----Creating LDA Model-----")
     ls = lda_model()
     t1 = time.time()
     print(str(t1-t))
+    # cleaning(ls)
+
     main(ls)
-    print(time.time()-t1)
+
+
+    print("find polarity and ", time.time()-t1)
