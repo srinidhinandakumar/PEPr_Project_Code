@@ -15,9 +15,10 @@ def read_input_folder():
     """
     data = []
     for filename in os.listdir(input_folder):
-        with open("{}/{}".format(input_folder, filename), 'r') as fp:
-            data.append(fp.read())
-    return data
+        if filename == "Donald Trump_September 24, 2016.txt":
+            with open("{}/{}".format(input_folder, filename), 'r') as fp:
+                data.append(fp.read())
+            return data
 
 
 def word_distribution(data):

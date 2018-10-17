@@ -15,8 +15,8 @@ from tweets_clean.clean_tweets import cleaning_pipeline
 # In[14]:
 
 
-inputfilename = "twitter_scraper/data/alltweets.json"
-outputfilename = "tweets_clean/cleaned_data/alltweets.json"
+inputfilename = "../twitter-scraper-rohith/data/1000tweets.json"
+outputfilename = "../twitter-scraper-rohith/cleaned_data/1000tweets.json"
 
 
 def main(ldamodel):
@@ -26,6 +26,7 @@ def main(ldamodel):
         allc = 0
         start=False
         tweet_id_prev=756633551152394240
+        fq = open(outputfilename, "a")
         with open(inputfilename, "r") as fr:
             lines = fr.readlines()
             for line in lines:
@@ -39,10 +40,8 @@ def main(ldamodel):
 
                     print(tweet["id"])
                     cleaned_tweet = cleaning_pipeline(tweet["full_text"])
-
-
-                    # tweet["full_text"] = cleaned_tweet
-                    # result+=str(tweet)+"\n"
+                    tweet["full_text"] = cleaned_tweet
+                    json.dump(tweet, fq)
                     # count+=1
                     # if count==800:
                     #     allc+=count
@@ -52,10 +51,8 @@ def main(ldamodel):
                     #     result=""
                     #     count=0
 
-
-
                 except Exception as e:
-                    print("Error : "+str(e)+" "+tweet["id"])
+                    print("Error : "+str(e))
         # write into output folder and file
         print(result)
         with open(outputfilename, "a") as fq:
@@ -72,5 +69,6 @@ if __name__ == '__main__':
     t = time.time()
     print("----Creating LDA Model-----")
     ls = lda_model()
-    print(time.time-t)
-    main(ldamodel)
+    print(str(time.time()-t))
+
+    main(ls)
