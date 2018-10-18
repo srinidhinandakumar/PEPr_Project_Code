@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
-input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Data_Donald_Trump"
-
+# input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Data_Donald_Trump"
+input_folder = "/Users/macbook/Desktop/2016_Data_Donald_Trump"
 
 def read_input_folder(only_ascii: bool = True) -> List[str]:
     """
