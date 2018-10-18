@@ -1,31 +1,25 @@
 from gensim import models, corpora
 
 from speech_ir.visualizer import read_input_folder
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
-import string
-
-stop = set(stopwords.words('english'))
-exclude = set(string.punctuation)
-lemma = WordNetLemmatizer()
-
-def clean(doc):
-    stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
-    punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
-    normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
-    return normalized
+from speech_ir.speech_sanitizer import speech_sanitizer
 
 
+def build_lda_model(num_topics: int = 3, passes: int = 50):
+    data = read_input_folder()
+    doc_clean = [speech_sanitizer(doc).split() for doc in data]
 
-data = read_input_folder()
-doc_clean = [clean(doc).split() for doc in data]
-
-dictionary = corpora.Dictionary(doc_clean)
-doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
-
-ldamodel = models.ldamodel.LdaModel(doc_term_matrix,id2word=dictionary, num_topics=3, passes=50)
-
-for idx, topic in ldamodel.print_topics():
-    print(idx, topic)
+    dictionary = corpora.Dictionary(doc_clean)
+    doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
+    lda_model = models.ldamodel.LdaModel(doc_term_matrix, id2word=dictionary,
+                                         num_topics=num_topics, passes=passes)
+    return lda_model, dictionary
 
 
+def predict_topics(tweet: str, lda_model, corpora_dict):
+    return max(regress_topics(tweet, lda_model, corpora_dict))
+
+
+def regress_topics(tweet: str, lda_model, corpora_dict):
+    test_words = speech_sanitizer(tweet)
+    test_vec = corpora_dict.doc2bow(test_words.split())
+    return dict(lda_model[test_vec])
