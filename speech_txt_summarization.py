@@ -1,4 +1,4 @@
-# source: https://stackabuse.com/text-summarization-with-nltk-in-python/
+
 import bs4 as bs  
 import urllib.request  
 import re
