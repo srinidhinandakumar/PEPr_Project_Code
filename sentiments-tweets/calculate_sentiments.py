@@ -8,6 +8,7 @@ from datetime import datetime
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from wordcloud import WordCloud
+
 # from vaderSentiment import sentiment as vaderSentiment
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from collections import defaultdict
@@ -35,6 +36,7 @@ class CalculateSentiments:
 
         pass
 
+
     def main(self):
         try:
             with open(self.inputfilename, "r") as fr:
@@ -44,6 +46,7 @@ class CalculateSentiments:
                     tweet_text = tweet["full_text"]
 
                     # Hit topic modeling API to get topics and weights
+
                     topics = self.get_tweet_topics(tweet_text)
 
                     # Vader SentimentAnalyzer to finding the polarity of the tweet
@@ -51,6 +54,12 @@ class CalculateSentiments:
 
                     # Multiply each topic-weight with polarity and add it to a final dictionary
                     self.add_to_topic_polarity(topics, sentiments)
+
+
+                    # Vader SentimentAnalyzer to finding the polarity of the tweet
+
+                    # Multiply each topic-weight with polarity and add it to a final dictionary
+
 
         except FileNotFoundError:
             print("unable to find tweet file")
