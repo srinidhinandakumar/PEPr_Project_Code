@@ -8,14 +8,17 @@ from sklearn.feature_extraction.text import CountVectorizer
 input_folder = "/media/disk/crawler/PEPr_Project_Code/speech_ir/data/2016_Data_Donald_Trump"
 
 
-def read_input_folder():
+def read_input_folder(only_ascii: bool = True) -> List[str]:
     """
     :return: a list of text, each element represents text from a file
     """
     data = []
     for filename in os.listdir(input_folder):
         with open("{}/{}".format(input_folder, filename), 'r') as fp:
-            data.append(fp.read())
+            file_data = fp.read()
+            if only_ascii:
+                file_data = file_data.encode('ascii', errors='ignore').decode('ascii')
+            data.append(file_data)
     return data
 
 
