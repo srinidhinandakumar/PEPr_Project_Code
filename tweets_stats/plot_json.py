@@ -76,6 +76,9 @@ def plot_bubble_chart(geocode_data_file):
 
     # Make an empty map
     m = folium.Map(location=[37.7837304, -97.4458825], tiles="Mapbox Bright", zoom_start=5)
+
+    folium.Marker(location=[37.926868, -78.024902], popup='Virginia (Speech delivered)').add_to(m)
+
     m.save('test.html')
 
     # folium.Circle(
@@ -158,17 +161,17 @@ def plot_charts():
     # plot_line_chart(line_chart_inputfile)
     # print('plotted line chart')
 
-    tweet_source_filename = 'stats/tweet_source_count.json'
-    plot_bar_chart(tweet_source_filename)
-    print('plotted bar chart')
+    # tweet_source_filename = 'stats/tweet_source_count.json'
+    # plot_bar_chart(tweet_source_filename)
+    # print('plotted bar chart')
 
 
     # bubble_chart_inputfile = 'stats/location_count.json'
     # convert_location_to_geocodes(bubble_chart_inputfile)
     # print('geocode_data_file is ready!')
 
-    # plot_bubble_chart(geocode_data_file)
-    # print('plotted bubble chart')
+    plot_bubble_chart(geocode_data_file)
+    print('plotted bubble chart')
 
 
 if __name__ == '__main__':
