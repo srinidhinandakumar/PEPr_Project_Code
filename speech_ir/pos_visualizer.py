@@ -83,8 +83,10 @@ def tf_idf(docs):
     plt.show()
     plt.imsave("data/images/freq.png", wc)
 
+
+
 data = read_input_folder()
 docs = [nlp(text) for text in data]
 # ner_tags_wc(docs)
-# pos_tags_wc(docs)
-tf_idf(data)
+pos_tags_wc(docs)
+# tf_idf(data)
