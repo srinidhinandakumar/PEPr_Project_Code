@@ -3,7 +3,7 @@ from gensim import models, corpora
 from speech_ir.visualizer import read_input_folder
 from speech_ir.speech_sanitizer import speech_sanitizer
 
-num_topics = 3
+num_topics = 4
 
 def build_lda_model(num_topics: int = num_topics, passes: int = 50):
     data = read_input_folder()

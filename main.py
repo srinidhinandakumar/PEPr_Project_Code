@@ -22,6 +22,7 @@ outputfilename = "../twitter-scraper-rohith/cleaned_data/10ktweets.json"
 
 cleaned_tweets_inputfile = "twitter_scraper/cleaned_data/10ktweets_cleaned.txt"
 
+topic_sentiments_outputfolder = "sentiments-tweets/topic_sentiments/"
 
 import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
@@ -98,17 +99,14 @@ def remove_stopwords(text, is_lower_case=False):
 
 def main(lda_model, dictionary):
     features = pd.read_csv(cleaned_tweets_inputfile)
-    # print(features)
 
     tweet_dictionary = {}
     id = 0
     for tweet in features.text:
         tweet_dictionary[id] = tweet
         id += 1
-    # print(tweet_dictionary[1])
 
     analyser = SentimentIntensityAnalyzer()
-    topic_sentiments = {}
 
     for i in range(0, len(features)):
         snt = analyser.polarity_scores(tweet_dictionary[i])
@@ -127,12 +125,10 @@ def main(lda_model, dictionary):
 
     print("vad_num_pos: %d\nvad_num_neg: %d\nvad_num_neu: %d\ntotal: %d\n" %(vad_num_pos, vad_num_neg, vad_num_neu, num_tweets))
 
-    make_chart(vad_num_pos, vad_num_neg, vad_num_neu)
-    get_10_most_neg_tweets(analyser, tweet_dictionary)
-
-    # Some topics are more positive / negative than others
     topic = list(range(0, num_topics))
-    # plt.figure(figsize=(20, 8))
+
+    make_chart(vad_num_pos, vad_num_neg, vad_num_neu, num_topics)
+    # get_10_most_neg_tweets(analyser, tweet_dictionary)
 
     for i in topic:
         # plt.subplot(1, num_topics, i + 1)
@@ -140,7 +136,7 @@ def main(lda_model, dictionary):
         num_pos = len(topic_tweets[topic_tweets['vader_comp'] > .1])
         num_neg = len(topic_tweets[topic_tweets['vader_comp'] < -.1])
         num_neu = len(topic_tweets[(topic_tweets['vader_comp'] < .1) & (topic_tweets['vader_comp'] > -.1)])
-        make_chart(num_pos, num_neg, num_neu, i)
+        make_chart(num_pos, num_neg, num_neu, num_topics, i)
 
     # plt.show()
 
@@ -156,7 +152,7 @@ def get_10_most_neg_tweets(analyser, tweet_dictionary):
 
     print(scores[:10])
 
-def make_chart(positve, negative, neutral, source= "Raw"):
+def make_chart(positve, negative, neutral, no_of_topics, source= "Raw"):
     # Pie chart
     labels = ['positive','negative','neutral']
     sizes = [positve, negative, neutral]
@@ -172,9 +168,9 @@ def make_chart(positve, negative, neutral, source= "Raw"):
     # Equal aspect ratio ensures that pie is drawn as a circle
     plt.title('Sentiment Distribution for Topic '+str(source), size = 20)
     plt.axis('equal')
-    # plt.imsave('topic_sentiments/topic_'+source+'.png', centre_circle)
-    plt.show()
-    # plt.close()
+    # plt.show()
+    plt.savefig(topic_sentiments_outputfolder + str(no_of_topics) + '/topic' + str(source) + '.png')
+    plt.close()
 
 
 if __name__ == '__main__':
@@ -185,8 +181,11 @@ if __name__ == '__main__':
     print(str(t1-t))
     # cleaning(ls)
 
-    for idx, topic in ldamodel.print_topics(-1):
-        print('Topic: {} Word: {}'.format(idx, topic))
+    topic_info_file = topic_sentiments_outputfolder + str(4) + '/topics.txt'
+
+    with open(topic_info_file, 'w') as fp:
+        for idx, topic in ldamodel.print_topics(-1):
+            fp.write('Topic: {} Word: {}\n'.format(idx, topic))
 
     main(ldamodel, dictionary)
 
