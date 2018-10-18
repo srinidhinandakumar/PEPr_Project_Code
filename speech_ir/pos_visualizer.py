@@ -1,12 +1,15 @@
 from collections import defaultdict
+from typing import List, Dict, Tuple
 
+import matplotlib.pyplot as plt
+import spacy
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en import English
 from wordcloud import WordCloud
+
 from speech_ir.visualizer import read_input_folder
-import spacy
-import matplotlib.pyplot as plt
-from typing import List, Dict, Tuple
-from spacy.lang.en.stop_words import STOP_WORDS
 
 """
 todo: 
@@ -58,7 +61,8 @@ def build_wc_from_dict(info: Dict[str, int], name):
 def tf_idf(docs):
     # Removing stop words from the corpus
     stop_words = set(stopwords.words('english'))
-    filtered_data = [' '.join([word for word in word_tokenize(page) if word not in stop_words]) for page in docs]
+    filtered_data = [' '.join([word for word in word_tokenize(page) if word.lower()
+                               not in stop_words]) for page in docs]
 
     # Generating tfidf values
     tfidf_values = defaultdict(int)
@@ -72,6 +76,7 @@ def tf_idf(docs):
         for index in feature_index:
             tfidf_values[feature_names[index]] += tf_matrix[doc, index]
 
+
     wc = WordCloud(width=1000, height=800).generate_from_frequencies(tfidf_values)
     plt.imshow(wc)
     plt.axis("off")
@@ -80,5 +85,6 @@ def tf_idf(docs):
 
 data = read_input_folder()
 docs = [nlp(text) for text in data]
-ner_tags_wc(docs)
-pos_tags_wc(docs)
+# ner_tags_wc(docs)
+# pos_tags_wc(docs)
+tf_idf(data)
