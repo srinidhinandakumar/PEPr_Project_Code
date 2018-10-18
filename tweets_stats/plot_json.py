@@ -116,6 +116,41 @@ def plot_bubble_chart(geocode_data_file):
     # Save it as html
     m.save('mymap.html')
 
+def plot_bar_chart(tweet_source_filename):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    plt.rcdefaults()
+
+    with open(tweet_source_filename) as f:
+        tweet_source_data = json.load(f)
+
+    objects = []
+    values = []
+
+    for k, v in tweet_source_data.items():
+        objects.append(k)
+        values.append(v)
+
+    objects = objects[:10]
+    values = values[:10]
+
+    # objects = ('Python', 'C++', 'Java', 'Perl', 'Scala', 'Lisp')
+    y_pos = np.arange(len(objects))
+    # performance = [10, 8, 6, 4, 2, 1]
+
+
+
+    plt.bar(y_pos, values, align='center', alpha=0.5)
+    plt.xticks(y_pos, objects, rotation=90)
+    plt.xlabel('Source')
+    plt.ylabel('Number of users')
+    plt.title('Top 10 Tweet Sources')
+    plt.savefig('bar_chart_tweet_sources.png')
+
+    plt.show()
+
 
 def plot_charts():
 
@@ -123,13 +158,17 @@ def plot_charts():
     # plot_line_chart(line_chart_inputfile)
     # print('plotted line chart')
 
+    tweet_source_filename = 'stats/tweet_source_count.json'
+    plot_bar_chart(tweet_source_filename)
+    print('plotted bar chart')
+
 
     # bubble_chart_inputfile = 'stats/location_count.json'
     # convert_location_to_geocodes(bubble_chart_inputfile)
     # print('geocode_data_file is ready!')
 
-    plot_bubble_chart(geocode_data_file)
-    print('plotted bubble chart')
+    # plot_bubble_chart(geocode_data_file)
+    # print('plotted bubble chart')
 
 
 if __name__ == '__main__':
