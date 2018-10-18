@@ -22,7 +22,6 @@ def read_input_folder(only_ascii: bool = True) -> List[str]:
             data.append(file_data)
     return data
 
-
 def word_distribution(data):
     counter = CountVectorizer()
     counter.fit(data)
