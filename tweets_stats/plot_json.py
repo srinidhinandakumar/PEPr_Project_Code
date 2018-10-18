@@ -86,15 +86,32 @@ def plot_bubble_chart(geocode_data_file):
     #     fill=False,
     # ).add_to(m)
 
+    print(data.iloc[45])
+
     # I can add marker one by one on the map
-    for i in range(0, 20):
-        folium.Circle(
-            location=[float(data.iloc[i]['lat']), float(data.iloc[i]['lon'])],
-            popup=str(data.iloc[i]['name']),
-            radius=int(data.iloc[i]['value']) * 100,
-            color='crimson',
-            fill=True,
-        ).add_to(m)
+    for i in range(0, 44):
+        try:
+            folium.Circle(
+                location=[float(data.iloc[i]['lat']), float(data.iloc[i]['lon'])],
+                popup=str(data.iloc[i]['name']) + " - " + str(data.iloc[i]['value']) + " tweets",
+                radius=int(data.iloc[i]['value']) * 300,
+                color='crimson',
+                fill=True,
+            ).add_to(m)
+        except Exception as e:
+            print(e)
+
+    for i in range(45, 80):
+        try:
+            folium.Circle(
+                location=[float(data.iloc[i]['lat']), float(data.iloc[i]['lon'])],
+                popup=str(data.iloc[i]['name']) + " - " + str(data.iloc[i]['value']) + " tweets",
+                radius=int(data.iloc[i]['value']) * 300,
+                color='crimson',
+                fill=True,
+            ).add_to(m)
+        except Exception as e:
+            print(e)
 
     # Save it as html
     m.save('mymap.html')
