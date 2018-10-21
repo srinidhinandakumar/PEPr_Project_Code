@@ -5,10 +5,11 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-input_folder = "/media/disk/crawler/PEPr_Project_Code/speech_ir/data/2016_Data_Donald_Trump"
+hillary_input_folder = ""
+donald_input_folder = ""
+full_data_folder = ""
 
-
-def read_input_folder(only_ascii: bool = True) -> List[str]:
+def read_input_folder(input_folder: str, only_ascii: bool = True) -> List[str]:
     """
     :return: a list of text, each element represents text from a file
     """
@@ -19,6 +20,14 @@ def read_input_folder(only_ascii: bool = True) -> List[str]:
             if only_ascii:
                 file_data = file_data.encode('ascii', errors='ignore').decode('ascii')
             data.append(file_data)
+    return data
+
+def read_full_data(only_ascii: bool = True) -> List[str]:
+    data = []
+    for folder in os.listdir(full_data_folder):
+        with open("{}/{}/full_speech.txt".format(full_data_folder, folder), 'r') as fp:
+            for spch in fp.readlines():
+                data.append(spch)
     return data
 
 

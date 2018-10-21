@@ -9,12 +9,21 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en import English
 from wordcloud import WordCloud
 
-from speech_ir.visualizer import read_input_folder
+from speech_ir.visualizer import read_input_folder, read_full_data, \
+    hillary_input_folder, donald_input_folder
 
 """
 todo: 
 use tf-idf to plot wordclouds
 """
+
+
+custom_stopwords = {"time", "years", "lot", "country", "countries",
+                    "people", "applause", "things", "way", "lot", "world",
+                    "kind", "percent", "democrats", "republicans", "americans",
+                    "america", "president", "today", "program", "what", "men"}
+
+
 nlp: English = spacy.load('en_core_web_sm')
 
 
@@ -22,9 +31,11 @@ def pos_tags_wc(docs):
     pos_tags = defaultdict(int)
     for doc in docs:
         for token in doc:
-            if not nlp.vocab[token.text].is_stop:
-                pos_tags[(token.text, token.pos_)] += 1
+            if nlp.vocab[token.text].is_stop or token.text.lower() in custom_stopwords:
+                continue
+            pos_tags[(token.text, token.pos_)] += 1
 
+    # print(pos_tags)
     all_tags = {tag for (_, tag) in pos_tags}
     for tag in all_tags:
         tag_words = filter_tags(pos_tags, tag)
@@ -36,8 +47,11 @@ def ner_tags_wc(docs):
     ner_tags: Dict[Tuple[str, str], int] = defaultdict(int)
     for doc in docs:
         for token in doc.ents:
-            if not nlp.vocab[token.text].is_stop:
-                ner_tags[(token.text, token.label_)] += 1
+            if nlp.vocab[token.text].is_stop or token.text.lower() in custom_stopwords:
+                continue
+            ner_tags[(token.text, token.label_)] += 1
+
+    # print(ner_tags)
 
     all_tags: List[str] = {tag for (_, tag) in ner_tags}
     for tag in all_tags:
@@ -85,8 +99,10 @@ def tf_idf(docs):
 
 
 
-data = read_input_folder()
+data =  read_full_data()
 docs = [nlp(text) for text in data]
-# ner_tags_wc(docs)
+ner_tags_wc(docs)
 pos_tags_wc(docs)
-# tf_idf(data)
+
+
+
