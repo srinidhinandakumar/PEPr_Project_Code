@@ -5,19 +5,24 @@ from typing import List
 import tqdm as tqdm
 from tweepy import OAuthHandler, API
 
-consumer_key = ""
-consumer_secret = ""
-access_token = ""
-access_token_secret = ""
+with open("config.json", 'r') as fp:
+    config = json.load(fp)
 
+twitter_config = config["twitter-keys"]
+consumer_key = twitter_config["consumer_key"]
+consumer_secret = twitter_config["consumer_secret"]
+access_token = twitter_config["access_token"]
+access_token_secret = twitter_config["access_token_secret"]
 
 class TwitterScraper:
     def __init__(self):
+        # todo: can move this into a configuration file format
         self.inputfilename = "data/tweetids.txt"
         self.outputfilename = "data/alltweets.json"
         self.lastidfilename = "data/lastId.txt"
         self.errorfilename = "data/errortweets.txt"
         self.request_rate_limits = 800
+        self.persistence_rate = 200
         self.api = self.authenitcate()
 
     def authenitcate(self):
@@ -50,8 +55,9 @@ class TwitterScraper:
             return None
 
     def append_tweets_data(self, json_tweets_list: List[str]):
+        non_empty_tweets = [tw for tw in json_tweets_list if tw]
         with open(self.outputfilename, 'a') as fp:
-            fp.write("\n".join(json_tweets_list) + "\n")
+            fp.write("\n".join(non_empty_tweets) + "\n")
 
     def write_last_id(self, lastId):
         with open(self.lastidfilename, 'w') as fp:
@@ -82,7 +88,7 @@ class TwitterScraper:
 
         # accumulators
         cur_cycle_tweets = []
-        errorTweets = []
+        error_tweets = []
         cur_cycle_requests = 0
         crawled_tweets = 0
         for cycle in range(start, tweetids_count, self.request_rate_limits):
@@ -91,28 +97,25 @@ class TwitterScraper:
                 try:
                     tweet = self.api.get_status(tweetids[i], tweet_mode="extended")
                     lastId = tweetids[i]
-                    print(lastId)
                     cur_cycle_tweets.append(json.dumps(tweet._json))
                     crawled_tweets += 1
                 except Exception as e:
                     print("------ERROR: ", str(e), " ID: ", tweetids[i], "------")
-                    errorTweets.append(tweetids[i])
+                    error_tweets.append(tweetids[i])
                     if type(e).__name__ == "RateLimitError":
                         print("------SLEEP for 200s------")
                         time.sleep(300)
 
-            # at the end of cycle flushing everything to disk
-            self.append_tweets_data(cur_cycle_tweets)
-            self.write_error_tweets(errorTweets)
-            self.write_last_id(lastId)
-            cur_cycle_tweets = []
-            errorTweets = []
+                # flushing data to disk after persistence rate tweets crawled
+                if not len(cur_cycle_tweets)%self.persistence_rate:
+                    self.append_tweets_data(cur_cycle_tweets)
+                    self.write_error_tweets(error_tweets)
+                    self.write_last_id(lastId)
+                    cur_cycle_tweets = []
+                    error_tweets = []
             print("Cycle complete, crawled {} tweets".format(crawled_tweets))
 
 
 if __name__ == '__main__':
-    try:
-        TwitterScraper().scrap()
-    except KeyboardInterrupt:
-        exit(0)
+    TwitterScraper().scrap()
 
