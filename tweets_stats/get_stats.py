@@ -13,11 +13,10 @@ class GetStats:
     stop_words = set(stopwords.words('english'))
 
     def __init__(self):
-        # self.inputfilename = "../twitter_scraper/data/alltweets.json"
+        self.inputfilename = "../twitter_scraper/data/alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/srinidhi_alltweets.json"
-        # self.inputfilename = "../twitter_scraper/data/kdata.json"
         self.outputfolder = "stats/"
 
         # Single Param dicts
@@ -152,7 +151,7 @@ class GetStats:
                         sourceExists = True if "source" in tweet else False
                         hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
                         dateExists = True if "created_at" in tweet else False
-                        # locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
+                        locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
                         userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
                         placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
@@ -173,9 +172,9 @@ class GetStats:
                             self.add_key_to_dict(self.date_count, dates)
 
                         # location (of user) and place (from where the tweet is being published)
-                        # if locationExists:
-                        #     locations = self.clean_location(tweet["user"]["location"])
-                        #     self.add_key_to_dict(self.location_count, locations)
+                        if locationExists:
+                            locations = self.clean_location(tweet["user"]["location"])
+                            self.add_key_to_dict(self.location_count, locations)
                         if placeExists:
                             locations = self.clean_location_state(tweet["place"]["full_name"])
                             self.add_key_to_dict(self.location_count, locations)
