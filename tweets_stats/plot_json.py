@@ -11,11 +11,9 @@ def plot_line_chart(filename):
     with open(filename) as f:
         data = json.load(f)
 
-    print(type(data))
-
     required_data = {}
     for k, v in data.items():
-        # date filter
+        # date filter - not a super great way though
         if "26-16" <= k <= "27-10":
             key1 = "0" + k.split("-")[0] if len(k.split("-")[0]) < 2 else k.split("-")[0]
             key2 = "0" + k.split("-")[1] if len(k.split("-")[1]) < 2 else k.split("-")[1]
