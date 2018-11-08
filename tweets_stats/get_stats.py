@@ -8,35 +8,39 @@ from datetime import datetime
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from wordcloud import WordCloud
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+analyser = SentimentIntensityAnalyzer()
 
 class GetStats:
     stop_words = set(stopwords.words('english'))
 
     def __init__(self):
-        self.inputfilename = "../twitter_scraper/data/alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
-        # self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
+        self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/srinidhi_alltweets.json"
-        self.outputfolder = "stats/"
+        self.outputfolder = "stats_parties/"
 
         # Single Param dicts
-        self.tweet_source_count = {}
-        self.hashtag_count = {}
-        self.date_count = {}
-        self.location_count = {}
-        self.user_bio_count = {}
+        # self.tweet_source_count = {}
+        # self.hashtag_count = {}
+        # self.date_count = {}
+        self.location_count_pos = {}
+        self.location_count_neg = {}
+        # self.user_bio_count = {}
 
         # Double Param dicts
-        self.date_location_count = {}
+        # self.date_location_count = {}
 
         # List of dicts
-        self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
+        # self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
+        self.dicts = ["self.location_count_pos", "self.location_count_neg"]
 
-    def add_key_to_dict(self, dict, keys):
+    def add_key_to_dict(self, dict, keys, value = 1):
         for key in keys:
             if key not in dict:
                 dict[key] = 0
-            dict[key] += 1
+            dict[key] += value
 
     def add_key_to_2args_dict(self, dict, keys1, keys2):
         for key1 in keys1:
@@ -148,45 +152,55 @@ class GetStats:
                         # line = line.decode('utf-8').replace('\0', '')
                         tweet = json.loads(line)
 
-                        sourceExists = True if "source" in tweet else False
-                        hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
-                        dateExists = True if "created_at" in tweet else False
+                        # sourceExists = True if "source" in tweet else False
+                        # hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
+                        # dateExists = True if "created_at" in tweet else False
                         locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
-                        userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
+                        # userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
                         placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
+                        snt = analyser.polarity_scores(tweet["text"])
+                        tweet_polarity = snt['compound']
+
                         # tweet source
-                        if sourceExists:
-                            sources = self.clean_tweet_source(tweet["source"])
-                            self.add_key_to_dict(self.tweet_source_count, sources)
-
-                        # hashtag
-                        if hashtagExists:
-                            hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
-                            self.add_key_to_dict(self.hashtag_count, hashtags)
-
-                        # date
-                        if dateExists:
-                            # Pass a list of parameters that you want to consider for the date in second arg
-                            dates = self.clean_date(tweet["created_at"], ["day", "hour"])
-                            self.add_key_to_dict(self.date_count, dates)
+                        # if sourceExists:
+                        #     sources = self.clean_tweet_source(tweet["source"])
+                        #     self.add_key_to_dict(self.tweet_source_count, sources)
+                        #
+                        # # hashtag
+                        # if hashtagExists:
+                        #     hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
+                        #     self.add_key_to_dict(self.hashtag_count, hashtags)
+                        #
+                        # # date
+                        # if dateExists:
+                        #     # Pass a list of parameters that you want to consider for the date in second arg
+                        #     dates = self.clean_date(tweet["created_at"], ["day", "hour"])
+                        #     self.add_key_to_dict(self.date_count, dates)
 
                         # location (of user) and place (from where the tweet is being published)
                         if locationExists:
                             locations = self.clean_location(tweet["user"]["location"])
-                            self.add_key_to_dict(self.location_count, locations)
+                            if tweet_polarity > 0:
+                                self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
+                            else:
+                                self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
                         if placeExists:
                             locations = self.clean_location_state(tweet["place"]["full_name"])
-                            self.add_key_to_dict(self.location_count, locations)
+                            # self.add_key_to_dict(self.location_count, locations)
+                            if tweet_polarity > 0:
+                                self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
+                            else:
+                                self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
 
                         # userbio
-                        if userbioExists:
-                            userbio = self.clean_userbio(tweet["user"]["description"])
-                            self.add_key_to_dict(self.user_bio_count, userbio)
-
-                        # date and location
-                        if dateExists and placeExists:
-                            self.add_key_to_2args_dict(self.date_location_count, dates, locations)
+                        # if userbioExists:
+                        #     userbio = self.clean_userbio(tweet["user"]["description"])
+                        #     self.add_key_to_dict(self.user_bio_count, userbio)
+                        #
+                        # # date and location
+                        # if dateExists and placeExists:
+                        #     self.add_key_to_2args_dict(self.date_location_count, dates, locations)
 
                     except:
                         # print('bad json: ', line)
