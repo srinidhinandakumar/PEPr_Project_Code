@@ -75,11 +75,11 @@ def meme_time():
 
     for file in os.listdir(inputfolder):
         filepath = inputfolder + file
-        if file == "Donald.csv":
-            continue
-
         df = pd.read_csv(filepath, engine='python')
-        # df = df.drop(df.ix[:, 'Unnamed: 7':'Unnamed: 199'].head(0).columns, axis=1)
+
+        if file == "Donald.csv":
+            df = df.drop(df.ix[:, 'Unnamed: 7':'Unnamed: 199'].head(0).columns, axis=1)
+
         timestamps = df.timestamp.dropna()
         # df = df.reset_index(drop=True)
 
@@ -109,8 +109,21 @@ def meme_time():
 
         # break
 
-def getAllMemesBetween(start, end):
-    pass
+def getAllMemesBetween(start, end, file):
+    # files = ["Donald.csv", "Trump.csv"]
+    filepath = inputfolder + file
+
+    df = pd.read_csv(filepath, engine='python')
+
+    if file == "Donald.csv":
+        df = df.drop(df.ix[:, 'Unnamed: 7':'Unnamed: 199'].head(0).columns, axis=1)
+
+    print(df)
+    print(len(df))
+    # df = df[(df['timestamp'].strftime('%Y%m%d') >= start)]
+    newdf = df.query('@start <= timestamp <= @end')
+    print(newdf)
+    print(len(newdf))
 
 
 def sentiment():
@@ -126,5 +139,9 @@ def sentiment():
 
 
 # countMemes()
-# sentiment()
-meme_time()
+sentiment()
+# meme_time()
+# start_date = datetime.strptime(str(datetime.now() - relativedelta(years = 3)), '%m/%d/%y %H:%M:%S')
+# end_date = datetime.strptime(str(datetime.now() - relativedelta(years = 2)), '%m/%d/%y %H:%M:%S')
+# print(start_date, end_date)
+# getAllMemesBetween(start_date, end_date, "Clinton.csv")
