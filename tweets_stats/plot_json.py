@@ -5,7 +5,8 @@ import matplotlib.pylab as plt
 
 from geopy.geocoders import Nominatim
 
-geocode_data_file = "geocodes_data.json"
+geocode_data_file_pos = "stats_parties/geocodes_data_pos.json"
+geocode_data_file_neg = "stats_parties/geocodes_data_neg.json"
 
 def plot_line_chart(filename):
     with open(filename) as f:
@@ -28,18 +29,26 @@ def plot_line_chart(filename):
     plt.show()
 
 def convert_location_to_geocodes(filename):
-    geolocator = Nominatim(user_agent="pepr_geocode_getter")
+    geolocator = Nominatim(user_agent="pepr_geocode_getter", timeout = 3)
 
     with open(filename) as f:
         locations = json.load(f)
+
+    locations = dict(sorted(locations.items(), key=lambda x: -abs(x[1])))
 
     latitudes = []
     longitudes = []
     names = []
     values = []
 
+    count = 0
     for k, v in locations.items():
+        print(k, v)
         location = geolocator.geocode(k)
+
+        if count == 100:
+            break
+        count += 1
 
         try:
             latitudes.append(location.latitude)
@@ -62,6 +71,10 @@ def convert_location_to_geocodes(filename):
 
 def plot_bubble_chart(geocode_data_file):
 
+    # Make an empty map
+    m = folium.Map(location=[37.7837304, -97.4458825], tiles="Mapbox Bright", zoom_start=5)
+    folium.Marker(location=[37.926868, -78.024902], popup='Virginia (Speech delivered)').add_to(m)
+
     with open(geocode_data_file) as f:
         geocodes_data = json.load(f)
 
@@ -69,9 +82,10 @@ def plot_bubble_chart(geocode_data_file):
     data = pd.DataFrame(geocodes_data)
     print(data)
 
-    # Make an empty map
-    m = folium.Map(location=[37.7837304, -97.4458825], tiles="Mapbox Bright", zoom_start=5)
-    folium.Marker(location=[37.926868, -78.024902], popup='Virginia (Speech delivered)').add_to(m)
+    if "pos" in str(geocode_data_file):
+        color = 'green'
+    else:
+        color = 'crimson'
 
     # add circles one by one on the map
     for i in range(0, 44):
@@ -79,14 +93,14 @@ def plot_bubble_chart(geocode_data_file):
             folium.Circle(
                 location=[float(data.iloc[i]['lat']), float(data.iloc[i]['lon'])],
                 popup=str(data.iloc[i]['name']) + " - " + str(data.iloc[i]['value']) + " tweets",
-                radius=int(data.iloc[i]['value']) * 300,
-                color='crimson',
+                radius=abs(data.iloc[i]['value']) * 200,
+                color=color,
                 fill=True,
             ).add_to(m)
         except Exception as e:
             print(e)
 
-    m.save('mymap.html')
+    m.save(str(geocode_data_file) + '.html' )
 
 def plot_bar_chart(tweet_source_filename):
     import matplotlib.pyplot as plt
@@ -130,11 +144,18 @@ def plot_charts():
     # plot_bar_chart(tweet_source_filename)
     # print('plotted bar chart')
 
-    # bubble_chart_inputfile = 'stats/location_count.json'
+    # bubble_chart_inputfile = 'stats_parties/location_count_pos.json'
     # convert_location_to_geocodes(bubble_chart_inputfile)
     # print('geocode_data_file is ready!')
 
-    plot_bubble_chart(geocode_data_file)
+    # bubble_chart_inputfile = 'stats_parties/location_count_neg.json'
+    # convert_location_to_geocodes(bubble_chart_inputfile)
+    # print('geocode_data_file is ready!')
+
+    plot_bubble_chart(geocode_data_file_pos)
+    print('plotted bubble chart')
+
+    plot_bubble_chart(geocode_data_file_neg)
     print('plotted bubble chart')
 
 

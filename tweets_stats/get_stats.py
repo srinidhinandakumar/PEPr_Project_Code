@@ -18,6 +18,7 @@ class GetStats:
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
         self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
+        # self.inputfilename = "../twitter_scraper/data/sample_data.json"
         # self.inputfilename = "../twitter_scraper/data/srinidhi_alltweets.json"
         self.outputfolder = "stats_parties/"
 
@@ -53,7 +54,7 @@ class GetStats:
     def dump_dict(self, dict_str, i):
         d = eval(dict_str)
         outputfilename = self.outputfolder + self.dicts[i].split(".")[1] + ".json"
-        sorted_d = dict(sorted(d.items(), key=lambda x: -x[1]))
+        sorted_d = dict(sorted(d.items(), key=lambda x: abs(x[1])))
         with open(outputfilename, 'w') as fp:
             json.dump(sorted_d, fp)
         print(outputfilename + " is ready.")
@@ -61,7 +62,7 @@ class GetStats:
     def plot_dict(self, dict_str, i):
         d = eval(dict_str)
         chartname = 'charts/wc_' + dict_str + '.png'
-        sorted_d = dict(sorted(d.items(), key=lambda x: -x[1]))
+        sorted_d = dict(sorted(d.items(), key=lambda x: abs(x[1])))
         keys = [key for key, _ in sorted_d.items()][:10]
         counts = [count for _, count in sorted_d.items()][:10]
         plt.plot(keys, counts)
@@ -124,6 +125,7 @@ class GetStats:
         if location != "":
             return [location.lower()]
         return []
+
     def clean_location_state(self, location):
         if location != "":
             geo = location.strip().lower().split(",")
@@ -144,13 +146,16 @@ class GetStats:
         return word_tokens
 
     def main(self):
+        i = 0
         try:
             with open(self.inputfilename, "r") as fr:
                 lines = fr.readlines()
                 for line in lines:
                     try:
+                        # print(line)
                         # line = line.decode('utf-8').replace('\0', '')
                         tweet = json.loads(line)
+                        # print(tweet)
 
                         # sourceExists = True if "source" in tweet else False
                         # hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
@@ -159,8 +164,12 @@ class GetStats:
                         # userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
                         placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
-                        snt = analyser.polarity_scores(tweet["text"])
+                        # print(tweet["full_text"])
+                        snt = analyser.polarity_scores(tweet["full_text"])
+                        # print(snt)
                         tweet_polarity = snt['compound']
+
+                        # print(locationExists, placeExists, tweet_polarity)
 
                         # tweet source
                         # if sourceExists:
@@ -180,18 +189,24 @@ class GetStats:
 
                         # location (of user) and place (from where the tweet is being published)
                         if locationExists:
+                            # print("locationExists")
                             locations = self.clean_location(tweet["user"]["location"])
                             if tweet_polarity > 0:
                                 self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
                             else:
                                 self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
+
                         if placeExists:
+                            # print("placeExists")
                             locations = self.clean_location_state(tweet["place"]["full_name"])
                             # self.add_key_to_dict(self.location_count, locations)
                             if tweet_polarity > 0:
                                 self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
                             else:
                                 self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
+
+                        # print(self.location_count_pos)
+                        # print(self.location_count_neg)
 
                         # userbio
                         # if userbioExists:
@@ -202,15 +217,21 @@ class GetStats:
                         # if dateExists and placeExists:
                         #     self.add_key_to_2args_dict(self.date_location_count, dates, locations)
 
+                        if i % 10000 == 0:
+                            print(i, " tweets done")
+
+                        i += 1
+
                     except:
                         # print('bad json: ', line)
+                        # print('bad json')
                         pass
 
             for i, dict in enumerate(self.dicts):
                 self.dump_dict(dict, i)
 
-            for i, dict in enumerate(self.dicts):
-                self.plot_dict_wc(dict, i)
+            # for i, dict in enumerate(self.dicts):
+            #     self.plot_dict_wc(dict, i)
 
         except FileNotFoundError:
             print("unable to find tweet file")
