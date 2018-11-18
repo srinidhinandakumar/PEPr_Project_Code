@@ -137,6 +137,16 @@ def sentiment():
     print(str(analyser.polarity_scores(sentence_wo)))
     print(str(analyser.polarity_scores(sentence_1)))
 
+    sentence = "A reminder of the countless #TX23 Hispanic-Americans who have fought to keep our nation safe #HispanicHeritageMonth https://t.co/KyFOqbrd1O"
+    print(str(analyser.polarity_scores(sentence)))
+    sentence = "A reminder of the countless Hispanic-Americans who have fought to keep our nation safe https://t.co/KyFOqbrd1O"
+    print(str(analyser.polarity_scores(sentence)))
+    sentence = "A reminder of the countless #TX23 Hispanic-Americans who have fought to keep our nation safe #HispanicHeritageMonth"
+    print(str(analyser.polarity_scores(sentence)))
+    sentence_wo = "A reminder of the countless Hispanic-Americans who have fought to keep our nation safe"
+    # print(str(analyser.polarity_scores(sentence)))
+    print(str(analyser.polarity_scores(sentence_wo)))
+
 
 # countMemes()
 sentiment()
