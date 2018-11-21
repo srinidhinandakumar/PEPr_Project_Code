@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import nltk
 import re
+import pprint
 
 from collections import Counter
 from datetime import datetime
@@ -17,26 +18,39 @@ class GetStats:
     def __init__(self):
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/rohith_alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/sample_data.json"
         # self.inputfilename = "../twitter_scraper/data/srinidhi_alltweets.json"
-        self.outputfolder = "stats_parties/"
-
+        #self.inputfilename = "../../twitter-scraper-rohith/data/alltweets.json"
+        #self.inputfilename = "../../twitter-scraper-akhil/data/alltweets.json"
+        #self.inputfilename = "../../twitter-scraper-dixita/data/dixita_alltweets.json"
+        #self.inputfilename = "../../twitter-scraper-srinidhi/data/alltweets.json"
+        #self.inputfilename = "../../twitter-scraper-heet/data/heet_alltweets.json"
+        ######
+        #self.inputfilename = "../../data/democratic/democratic.json"
+        self.inputfilename = "../../data/republican/republican.json"
+        
+        #self.outputfolder = "../../data/democratic/stats/"
+        self.outputfolder = "../../data/republican/stats/"
+        
+        #self.chartouputfolder = "../../data/democratic/charts/"
+        self.chartouputfolder = "../../data/republican/charts/"
+        
         # Single Param dicts
-        # self.tweet_source_count = {}
-        # self.hashtag_count = {}
-        # self.date_count = {}
-        self.location_count_pos = {}
-        self.location_count_neg = {}
-        # self.user_bio_count = {}
+        self.tweet_source_count = {}
+        self.hashtag_count = {}
+        self.date_count = {}
+        #self.location_count_pos = {}
+        #self.location_count_neg = {}
+        self.user_bio_count = {}
+        self.location_count = {}
 
         # Double Param dicts
-        # self.date_location_count = {}
+        self.date_location_count = {}
 
         # List of dicts
-        # self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
-        self.dicts = ["self.location_count_pos", "self.location_count_neg"]
-
+        self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
+        #self.dicts = ["self.location_count_pos", "self.location_count_neg"]
+        #self.dicts = ["self.date_count"]
     def add_key_to_dict(self, dict, keys, value = 1):
         for key in keys:
             if key not in dict:
@@ -61,7 +75,7 @@ class GetStats:
 
     def plot_dict(self, dict_str, i):
         d = eval(dict_str)
-        chartname = 'charts/wc_' + dict_str + '.png'
+        chartname = self.chartouputfolder+'/wc_' + dict_str + '.png'
         sorted_d = dict(sorted(d.items(), key=lambda x: abs(x[1])))
         keys = [key for key, _ in sorted_d.items()][:10]
         counts = [count for _, count in sorted_d.items()][:10]
@@ -157,11 +171,11 @@ class GetStats:
                         tweet = json.loads(line)
                         # print(tweet)
 
-                        # sourceExists = True if "source" in tweet else False
-                        # hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
-                        # dateExists = True if "created_at" in tweet else False
+                        sourceExists = True if "source" in tweet else False
+                        hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
+                        dateExists = True if "created_at" in tweet else False
                         locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
-                        # userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
+                        userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
                         placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
                         # print(tweet["full_text"])
@@ -172,20 +186,20 @@ class GetStats:
                         # print(locationExists, placeExists, tweet_polarity)
 
                         # tweet source
-                        # if sourceExists:
-                        #     sources = self.clean_tweet_source(tweet["source"])
-                        #     self.add_key_to_dict(self.tweet_source_count, sources)
+                        if sourceExists:
+                            sources = self.clean_tweet_source(tweet["source"])
+                            self.add_key_to_dict(self.tweet_source_count, sources)
                         #
                         # # hashtag
-                        # if hashtagExists:
-                        #     hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
-                        #     self.add_key_to_dict(self.hashtag_count, hashtags)
+                        if hashtagExists:
+                            hashtags = self.clean_hashtags(tweet["entities"]["hashtags"])
+                            self.add_key_to_dict(self.hashtag_count, hashtags)
                         #
                         # # date
-                        # if dateExists:
-                        #     # Pass a list of parameters that you want to consider for the date in second arg
-                        #     dates = self.clean_date(tweet["created_at"], ["day", "hour"])
-                        #     self.add_key_to_dict(self.date_count, dates)
+                        if dateExists:
+                             # Pass a list of parameters that you want to consider for the date in second arg
+                            dates = self.clean_date(tweet["created_at"], ["year","month","day"])
+                            self.add_key_to_dict(self.date_count, dates)
 
                         # location (of user) and place (from where the tweet is being published)
                         if locationExists:
@@ -199,7 +213,7 @@ class GetStats:
                         if placeExists:
                             # print("placeExists")
                             locations = self.clean_location_state(tweet["place"]["full_name"])
-                            # self.add_key_to_dict(self.location_count, locations)
+                            self.add_key_to_dict(self.location_count, locations)
                             if tweet_polarity > 0:
                                 self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
                             else:
@@ -209,13 +223,13 @@ class GetStats:
                         # print(self.location_count_neg)
 
                         # userbio
-                        # if userbioExists:
-                        #     userbio = self.clean_userbio(tweet["user"]["description"])
-                        #     self.add_key_to_dict(self.user_bio_count, userbio)
+                        if userbioExists:
+                            userbio = self.clean_userbio(tweet["user"]["description"])
+                            self.add_key_to_dict(self.user_bio_count, userbio)
                         #
                         # # date and location
-                        # if dateExists and placeExists:
-                        #     self.add_key_to_2args_dict(self.date_location_count, dates, locations)
+                        if dateExists and placeExists:
+                            self.add_key_to_2args_dict(self.date_location_count, dates, locations)
 
                         if i % 10000 == 0:
                             print(i, " tweets done")
@@ -226,13 +240,13 @@ class GetStats:
                         # print('bad json: ', line)
                         # print('bad json')
                         pass
-
+            #pprint.pprint(self.date_count, indent=4)
             for i, dict in enumerate(self.dicts):
                 self.dump_dict(dict, i)
 
-            # for i, dict in enumerate(self.dicts):
-            #     self.plot_dict_wc(dict, i)
-
+            for i, dict in enumerate(self.dicts):
+                self.plot_dict_wc(dict, i)
+                
         except FileNotFoundError:
             print("unable to find tweet file")
         except Exception as e:
