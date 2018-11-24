@@ -5,9 +5,9 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-hillary_input_folder = ""
-donald_input_folder = ""
-full_data_folder = ""
+hillary_input_folder = "/media/disk/crawler/PEPr_Project_Code/speech_ir/data/2016_Data_Hillary Clinton"
+donald_input_folder = "/media/disk/crawler/PEPr_Project_Code/speech_ir/data/2016_Data_Donald_Trump"
+full_data_folder = "/media/disk/crawler/PEPr_Project_Code/speech_ir/data/full_data/Data/"
 
 def read_input_folder(input_folder: str, only_ascii: bool = True) -> List[str]:
     """
