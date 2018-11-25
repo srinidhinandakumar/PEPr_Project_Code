@@ -48,10 +48,13 @@ class GetStats:
         self.date_location_count = {}
 
         # List of dicts
-        self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
-        #self.dicts = ["self.location_count_pos", "self.location_count_neg"]
+        #self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
+        self.dicts = ["self.location_count"]
         #self.dicts = ["self.date_count"]
+        
+        
     def add_key_to_dict(self, dict, keys, value = 1):
+        #print(keys)
         for key in keys:
             if key not in dict:
                 dict[key] = 0
@@ -170,12 +173,14 @@ class GetStats:
                         # line = line.decode('utf-8').replace('\0', '')
                         tweet = json.loads(line)
                         # print(tweet)
-
+                        '''
                         sourceExists = True if "source" in tweet else False
                         hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
                         dateExists = True if "created_at" in tweet else False
-                        locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
                         userbioExists = True if "user" in tweet and tweet["user"] != None and "description" in tweet["user"] else False
+                        '''
+                        locationExists = True if "user" in tweet and tweet["user"] != None and "location" in tweet["user"] else False
+                        
                         placeExists = True if "place" in tweet and tweet["place"] != None and "full_name" in tweet["place"] else False
 
                         # print(tweet["full_text"])
@@ -183,8 +188,8 @@ class GetStats:
                         # print(snt)
                         tweet_polarity = snt['compound']
 
-                        # print(locationExists, placeExists, tweet_polarity)
-
+                        #print(locationExists, placeExists, tweet_polarity)
+                        '''
                         # tweet source
                         if sourceExists:
                             sources = self.clean_tweet_source(tweet["source"])
@@ -200,29 +205,29 @@ class GetStats:
                              # Pass a list of parameters that you want to consider for the date in second arg
                             dates = self.clean_date(tweet["created_at"], ["year","month","day"])
                             self.add_key_to_dict(self.date_count, dates)
-
+                        '''
                         # location (of user) and place (from where the tweet is being published)
                         if locationExists:
-                            # print("locationExists")
+                            #print("locationExists")
                             locations = self.clean_location(tweet["user"]["location"])
-                            if tweet_polarity > 0:
-                                self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
-                            else:
-                                self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
+                            self.add_key_to_dict(self.location_count, locations, tweet_polarity)
 
                         if placeExists:
                             # print("placeExists")
                             locations = self.clean_location_state(tweet["place"]["full_name"])
-                            self.add_key_to_dict(self.location_count, locations)
+                            #self.add_key_to_dict(self.location_count, locations)
+                            self.add_key_to_dict(self.location_count, locations, tweet_polarity)
+                            '''
                             if tweet_polarity > 0:
                                 self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
                             else:
                                 self.add_key_to_dict(self.location_count_neg, locations, tweet_polarity)
-
-                        # print(self.location_count_pos)
+                            '''
+                        #print(self.location_count)
                         # print(self.location_count_neg)
 
                         # userbio
+                        '''
                         if userbioExists:
                             userbio = self.clean_userbio(tweet["user"]["description"])
                             self.add_key_to_dict(self.user_bio_count, userbio)
@@ -230,7 +235,7 @@ class GetStats:
                         # # date and location
                         if dateExists and placeExists:
                             self.add_key_to_2args_dict(self.date_location_count, dates, locations)
-
+                        '''
                         if i % 10000 == 0:
                             print(i, " tweets done")
 

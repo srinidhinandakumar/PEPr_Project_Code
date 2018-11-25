@@ -75,7 +75,10 @@ def convert_location_to_geocodes(filename):
 def convert_location_to_states(filenames):
     geolocator = Nominatim(user_agent="pepr_geocode_getter", timeout=3)
     sentiments = defaultdict(int)
-
+    
+    with open('state_population.json','r') as fp:
+        population = json.load(fp)
+        
     for filename in filenames:
         with open(filename) as f:
             locations = json.load(f)
@@ -100,9 +103,12 @@ def convert_location_to_states(filenames):
                 print(e)
 
 
-    f = open('state_sentiments.csv', 'w')
+    f = open('../../data/democratic/stats/state_sentiments.csv', 'w')
     for key, value in sentiments.items():
-        f.write(key + ',' + str(value) + "\n")
+        if key in population:
+            f.write(key + ',' + str(value) + ',' + str(population[key]) + "\n")
+        else:
+            f.write(key + ',' + str(value) + "\n")
 
 def plot_bubble_chart(geocode_data_file):
 
@@ -183,7 +189,8 @@ def plot_charts():
     # convert_location_to_geocodes(bubble_chart_inputfile)
     # print('geocode_data_file is ready!')
 
-    inputfiles = ['stats_parties/location_count_pos.json', 'stats_parties/location_count_neg.json']
+    inputfiles = ['../../data/democratic/stats/location_count.json']
+    
     convert_location_to_states(inputfiles)
     print('geocode_data_file is ready!')
 
