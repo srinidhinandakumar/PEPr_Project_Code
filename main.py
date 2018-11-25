@@ -14,12 +14,12 @@ from gensim import corpora, models, similarities
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from matplotlib.ticker import NullFormatter
 
-
+from gensim.models import LdaModel
 # User defined library imports
 from speech_ir.lda_models import build_lda_model, predict_topics, num_topics
 from tweets_clean.clean_tweets import cleaning_pipeline
 
-
+'''
 inputfilename = "../data/republican/republican.json"
 
 output_tweet_filename = "../data/republican/republican_cleaned_tweets.txt"
@@ -37,7 +37,7 @@ output_all_filename = "../data/democratic/democratic_tweets_memes.txt"
 
 cleaned_tweets_inputfile = "../data/democratic/democratic_tweets_memes.txt"
 topic_sentiments_outputfolder = "../data/democratic/topic_sentiments/"
-'''
+
 
 import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
@@ -146,6 +146,10 @@ def remove_stopwords(text, is_lower_case=False):
     return filtered_text
 
 
+def load(data_path):
+    return LdaModel.load(temp_file)
+
+
 def main(lda_model, dictionary):
     features = pd.read_csv(cleaned_tweets_inputfile,delimiter="\t")
 
@@ -156,9 +160,8 @@ def main(lda_model, dictionary):
         id += 1
 
     analyser = SentimentIntensityAnalyzer()
-
+    
     for i in range(0, len(features)):
-        print(i)
         snt = analyser.polarity_scores(tweet_dictionary[i])
         features.at[i, 'tweet_id'] = i
         features.at[i, 'vader_comp'] = snt['compound']
@@ -166,11 +169,14 @@ def main(lda_model, dictionary):
         features.at[i, 'vader_neu'] = snt['neu']
         features.at[i, 'vader_neg'] = snt['neg']
         features.at[i, 'topic'] = predict_topics(tweet_dictionary[i], lda_model, dictionary)
-        features.at[i, 'scaled_polarity'] = features.at[i,'vader_comp']*features.at[i,'reach']
-    
-    print(features)
-    
-    #features.to_csv('features_sentiments.csv')
+        
+        try:
+            features.at[i,'reach'] = int(features.at[i,'reach'])
+            features.at[i, 'scaled_polarity'] = features.at[i,'vader_comp']*features.at[i,'reach']
+        except Exception as e:
+            features.at[i,'reach']=0
+            features.at[i, 'scaled_polarity'] = 0
+            
     
     num_tweets = len(features)
     vad_num_pos = len(features[features['scaled_polarity'] > .1*features['reach']])
@@ -240,14 +246,24 @@ def make_chart_2(features, positve, negative, neutral, no_of_topics, source= "Ra
 
 
 if __name__ == '__main__':
+    from gensim import models, corpora
+
+    lda_filename = "lda_model_store/ldamodel"
+    
     
     t = time.time()
-    print("----Creating LDA Model-----")
-    ldamodel, dictionary = build_lda_model()
+    #print("----Creating LDA Model-----")
+    #ldamodel, dictionary = build_lda_model()
+    #dictionary.save(lda_filename+"dict")
+    #ldamodel.save(lda_filename)
+
+    print("----Loading LDA Model-----")
+    dictionary = corpora.Dictionary().load(lda_filename+"dict")
+    ldamodel = LdaModel.load(lda_filename)
+
     
     t1 = time.time()
     print(str(t1-t))
-    #ldamodel.save("lda.model")
     '''
     cleaning()
     clean_memes()
