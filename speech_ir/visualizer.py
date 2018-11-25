@@ -6,8 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
-# input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Data_Donald_Trump"
-input_folder = "/Users/macbook/Desktop/2016_Data_Donald_Trump"
+#input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Data_Donald_Trump"
+#input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Republican_Speech"
+#input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_Democratic_Speech"
+input_folder = "/Users/srinidhi/Desktop/all-twitter-files/2016_all_speeches"
+#input_folder = "/Users/macbook/Desktop/2016_Data_Donald_Trump"
 
 def read_input_folder(only_ascii: bool = True) -> List[str]:
     """
@@ -15,7 +18,9 @@ def read_input_folder(only_ascii: bool = True) -> List[str]:
     """
     data = []
     for filename in os.listdir(input_folder):
+        if filename==".DS_Store": continue
         with open("{}/{}".format(input_folder, filename), 'r') as fp:
+            
             file_data = fp.read()
             if only_ascii:
                 file_data = file_data.encode('ascii', errors='ignore').decode('ascii')

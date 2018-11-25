@@ -14,9 +14,11 @@ class GetStats:
 
     def __init__(self):
         # self.inputfilename = "../twitter_scraper/data/alltweets.json"
-        self.inputfilename = "../twitter_scraper/data/dixita_alltweets.json"
         # self.inputfilename = "../twitter_scraper/data/kdata.json"
-        self.outputfolder = "stats/"
+        
+        #self.inputfilename = "../../data/democratic/democratic.json"
+        self.inputfilename = "../../data/republican/republican.json"
+        self.outputfolder = "../../data/republican/stats/"
 
         # Single Param dicts
         self.tweet_source_count = {}

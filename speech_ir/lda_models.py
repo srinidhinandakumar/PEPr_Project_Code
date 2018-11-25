@@ -3,16 +3,16 @@ from gensim import models, corpora
 from speech_ir.visualizer import read_input_folder
 from speech_ir.speech_sanitizer import speech_sanitizer
 
-num_topics = 4
+num_topics = 3
 
-def build_lda_model(num_topics: int = num_topics, passes: int = 50):
+def build_lda_model(num_topics: int = num_topics, passes: int = 75):
     data = read_input_folder()
     doc_clean = [speech_sanitizer(doc).split() for doc in data]
 
     dictionary = corpora.Dictionary(doc_clean)
     doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
     lda_model = models.ldamodel.LdaModel(doc_term_matrix, id2word=dictionary,
-                                         num_topics=num_topics, passes=passes)
+                                         num_topics=num_topics, passes=passes, random_state=8, iterations=200)
     return lda_model, dictionary
 
 
