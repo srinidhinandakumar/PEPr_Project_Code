@@ -4,6 +4,7 @@ import nltk
 import re
 import pprint
 
+from geopy.geocoders import Nominatim
 from collections import Counter
 from datetime import datetime
 from nltk.corpus import stopwords
@@ -26,15 +27,15 @@ class GetStats:
         #self.inputfilename = "../../twitter-scraper-srinidhi/data/alltweets.json"
         #self.inputfilename = "../../twitter-scraper-heet/data/heet_alltweets.json"
         ######
-        #self.inputfilename = "../../data/democratic/democratic.json"
-        self.inputfilename = "../../data/republican/republican.json"
+        self.inputfilename = "../../data/democratic/democratic.json"
+        #self.inputfilename = "../../data/republican/republican.json"
         
-        #self.outputfolder = "../../data/democratic/stats/"
-        self.outputfolder = "../../data/republican/stats/"
+        self.outputfolder = "../../data/democratic/stats/"
+        #self.outputfolder = "../../data/republican/stats/"
         
-        #self.chartouputfolder = "../../data/democratic/charts/"
-        self.chartouputfolder = "../../data/republican/charts/"
-        
+        self.chartouputfolder = "../../data/democratic/charts/"
+        #self.chartouputfolder = "../../data/republican/charts/"
+        self.geolocator = Nominatim(user_agent="pepr_geocode_getter", timeout=3)
         # Single Param dicts
         self.tweet_source_count = {}
         self.hashtag_count = {}
@@ -43,23 +44,33 @@ class GetStats:
         #self.location_count_neg = {}
         self.user_bio_count = {}
         self.location_count = {}
-
+        self.location_polarity = {}
+        self.state_count = {}
+        self.state_polarity = {}
         # Double Param dicts
         self.date_location_count = {}
 
         # List of dicts
         #self.dicts = ["self.tweet_source_count", "self.hashtag_count", "self.date_count", "self.location_count", "self.user_bio_count", "self.date_location_count"]
-        self.dicts = ["self.location_count"]
+        self.dicts = ["self.state_count","self.state_polarity"]
         #self.dicts = ["self.date_count"]
         
         
     def add_key_to_dict(self, dict, keys, value = 1):
         #print(keys)
+        
         for key in keys:
-            if key not in dict:
-                dict[key] = 0
-            dict[key] += value
-
+            #print(key)
+            location = self.geolocator.geocode(key, addressdetails=True)
+            print(location)
+            if location.raw['address']['country'] == 'USA':
+                k = location.raw['address']['state']
+                #print(k)
+                if k not in dict:
+                    dict[k] = 0
+                dict[k] += value  
+        print("One")
+        
     def add_key_to_2args_dict(self, dict, keys1, keys2):
         for key1 in keys1:
             for key2 in keys2:
@@ -71,7 +82,19 @@ class GetStats:
     def dump_dict(self, dict_str, i):
         d = eval(dict_str)
         outputfilename = self.outputfolder + self.dicts[i].split(".")[1] + ".json"
-        sorted_d = dict(sorted(d.items(), key=lambda x: abs(x[1])))
+        sorted_d = dict(sorted(d.items(), key=lambda x: abs(x[1]), reverse=True))
+        with open(outputfilename, 'w') as fp:
+            json.dump(sorted_d, fp)
+        print(outputfilename + " is ready.")
+    
+    def dump_dict_2(self):
+        
+        temp_dict = dict()
+        for loc,val in self.state_polarity.items():
+            temp_dict[loc] = val/self.state_count[loc]
+        
+        outputfilename = self.outputfolder + "state_polarity_normalized.json"
+        sorted_d = dict(sorted(temp_dict.items(), key=lambda x: abs(x[1]), reverse=True))
         with open(outputfilename, 'w') as fp:
             json.dump(sorted_d, fp)
         print(outputfilename + " is ready.")
@@ -169,10 +192,10 @@ class GetStats:
                 lines = fr.readlines()
                 for line in lines:
                     try:
-                        # print(line)
+                        #print(i)
                         # line = line.decode('utf-8').replace('\0', '')
                         tweet = json.loads(line)
-                        # print(tweet)
+                        #print(tweet)
                         '''
                         sourceExists = True if "source" in tweet else False
                         hashtagExists = True if "entities" in tweet and tweet["entities"] != None and "hashtags" in tweet["entities"] else False
@@ -210,13 +233,15 @@ class GetStats:
                         if locationExists:
                             #print("locationExists")
                             locations = self.clean_location(tweet["user"]["location"])
-                            self.add_key_to_dict(self.location_count, locations, tweet_polarity)
-
-                        if placeExists:
-                            # print("placeExists")
+                            self.add_key_to_dict(self.state_count, locations)
+                            self.add_key_to_dict(self.state_polarity, locations, tweet_polarity)
+                            #print("placeExists")
+                            
+                        if placeExists and not locationExists:
+                            #print("placeExists")
                             locations = self.clean_location_state(tweet["place"]["full_name"])
-                            #self.add_key_to_dict(self.location_count, locations)
-                            self.add_key_to_dict(self.location_count, locations, tweet_polarity)
+                            self.add_key_to_dict(self.state_count, locations)
+                            self.add_key_to_dict(self.state_polarity, locations, tweet_polarity)
                             '''
                             if tweet_polarity > 0:
                                 self.add_key_to_dict(self.location_count_pos, locations, tweet_polarity)
@@ -243,15 +268,17 @@ class GetStats:
 
                     except:
                         # print('bad json: ', line)
-                        # print('bad json')
+                        print('bad json')
                         pass
             #pprint.pprint(self.date_count, indent=4)
             for i, dict in enumerate(self.dicts):
                 self.dump_dict(dict, i)
-
+            
+            self.dump_dict_2()
+            '''
             for i, dict in enumerate(self.dicts):
                 self.plot_dict_wc(dict, i)
-                
+            '''   
         except FileNotFoundError:
             print("unable to find tweet file")
         except Exception as e:

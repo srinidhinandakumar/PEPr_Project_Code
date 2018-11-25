@@ -74,19 +74,24 @@ def convert_location_to_geocodes(filename):
 
 def convert_location_to_states(filenames):
     geolocator = Nominatim(user_agent="pepr_geocode_getter", timeout=3)
-    sentiments = defaultdict(int)
+    state_sentiments = defaultdict(int)
+    state_count = defaultdict(int)
     
     with open('state_population.json','r') as fp:
         population = json.load(fp)
         
+    with open('../../data/republican/stats/location_count.json','r') as fp:
+        location_count = json.load(fp)
+    
+    with open('../../data/republican/stats/location_polarity.json','r') as fp:
+        polarity = json.load(fp)
+        
     for filename in filenames:
-        with open(filename) as f:
-            locations = json.load(f)
 
-        locations = dict(sorted(locations.items(), key=lambda x: -abs(x[1])))
+        polarity = dict(sorted(polarity.items(), key=lambda x: -abs(x[1])))
 
         count = 0
-        for k, v in locations.items():
+        for k, v in polarity.items():
             # print(k, v)
             location = geolocator.geocode(k, addressdetails=True)
 
@@ -97,18 +102,21 @@ def convert_location_to_states(filenames):
             try:
                 if location.raw['address']['country'] == 'USA':
                     print(location.raw['address']['state'])
-                    sentiments[location.raw['address']['state']] += v
+                    
+                    state_sentiments[location.raw['address']['state']] += v
+                    state_count[location.raw['address']['state']] += location_count[k]
+                    
             except Exception as e:
                 # if the string is not location or couldn't find address or state for location
                 print(e)
 
 
-    f = open('../../data/democratic/stats/state_sentiments.csv', 'w')
-    for key, value in sentiments.items():
+    f = open('../../data/republican/stats/state_sentiments.csv', 'w')
+    for key, value in state_sentiments.items():
         if key in population:
-            f.write(key + ',' + str(value) + ',' + str(population[key]) + "\n")
+            f.write(key + ',' + str(value/state_count[key]) + ',' + str(population[key]) + "\n")
         else:
-            f.write(key + ',' + str(value) + "\n")
+            f.write(key + ',' + str(value/state_count[key]) + "\n")
 
 def plot_bubble_chart(geocode_data_file):
 
@@ -189,7 +197,7 @@ def plot_charts():
     # convert_location_to_geocodes(bubble_chart_inputfile)
     # print('geocode_data_file is ready!')
 
-    inputfiles = ['../../data/democratic/stats/location_count.json']
+    inputfiles = ['../../data/republican/stats/location_polarity_normalized.json']
     
     convert_location_to_states(inputfiles)
     print('geocode_data_file is ready!')
